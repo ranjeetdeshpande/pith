@@ -1,0 +1,153 @@
+/* ═══════════════════════════════════════════════════════════
+   pith-spinner — Theme-native loading indicator
+   ─────────────────────────────────────────────────────────
+   Ink    → triangle trace  (brand mark drawing itself)
+   Glass  → sonar rings     (three concentric rings expanding)
+   Brutal → square orbit    (one square stepping 3 vertices)
+   ═══════════════════════════════════════════════════════════ */
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  color: currentColor;
+}
+
+:host([size="xs"]) { width: 0.75rem; height: 0.75rem; }
+:host([size="sm"]) { width: 1rem;    height: 1rem;    }
+:host([size="md"]) { width: 1.25rem; height: 1.25rem; }
+:host([size="lg"]) { width: 1.75rem; height: 1.75rem; }
+:host([size="xl"]) { width: 2.5rem;  height: 2.5rem;  }
+
+.root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* All three variants — ink is shown by default (no theme = ink) */
+.ink-tri    { display: block; }
+.glass-rings { display: none; }
+.brutal-bits { display: none; }
+
+/* ── Glass override ──────────────────────────────────────── */
+:host-context([data-theme="glass"]) .ink-tri     { display: none; }
+:host-context([data-theme="glass"]) .glass-rings { display: flex; align-items: center; justify-content: center; }
+
+/* ── Brutal override ─────────────────────────────────────── */
+:host-context([data-theme="brutal"]) .ink-tri     { display: none; }
+:host-context([data-theme="brutal"]) .brutal-bits { display: flex; align-items: center; justify-content: center; }
+
+/* ─── Ink: triangle trace ──────────────────────────────────
+   The equilateral triangle draws itself via stroke-dashoffset,
+   pauses fully drawn, then fades out and loops — evoking the
+   brand mark coming alive with each cycle.
+   ─────────────────────────────────────────────────────────── */
+.ink-tri {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.tri-path {
+  stroke: currentColor;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  /* Perimeter of triangle verts 20,2 · 38,34 · 2,34 ≈ 110px */
+  stroke-dasharray: 110;
+  stroke-dashoffset: 110;
+  animation: tri-trace 1.4s ease-in-out infinite;
+}
+
+@keyframes tri-trace {
+  0%  { stroke-dashoffset: 110; opacity: 1; }
+  65% { stroke-dashoffset: 0;   opacity: 1; }
+  82% { stroke-dashoffset: 0;   opacity: 0; }
+  100%{ stroke-dashoffset: 0;   opacity: 0; }
+}
+
+/* ─── Glass: sonar rings ───────────────────────────────────
+   Three concentric rings expand from the centre and fade.
+   Staggered delays create a pulsing "depth" effect.
+   ─────────────────────────────────────────────────────────── */
+.glass-rings {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  opacity: 0;
+  animation: sonar 1.5s ease-out infinite;
+}
+
+.ring-1 { animation-delay: 0ms;   }
+.ring-2 { animation-delay: 430ms; }
+.ring-3 { animation-delay: 860ms; }
+
+@keyframes sonar {
+  0%   { transform: scale(0.2); opacity: 0.85; }
+  100% { transform: scale(1);   opacity: 0;    }
+}
+
+/* ─── Brutal: square orbit ─────────────────────────────────
+   One filled square steps (steps(1) — no easing) between the
+   three vertices of a triangle. Hard, mechanical, direct.
+   ─────────────────────────────────────────────────────────── */
+.brutal-bits {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.bit {
+  position: absolute;
+  width: 32%;
+  aspect-ratio: 1;
+  background: currentColor;
+  animation: tri-orbit 750ms steps(1) infinite;
+}
+
+/* Equilateral triangle vertices centred in the 100%×100% box:
+   top-centre → (34%, 5%)  bottom-left → (4%, 60%)  bottom-right → (64%, 60%) */
+@keyframes tri-orbit {
+  0%   { top: 5%;  left: 34%; }
+  33%  { top: 60%; left: 4%;  }
+  66%  { top: 60%; left: 64%; }
+  100% { top: 5%;  left: 34%; }
+}
+
+/* ── Reduced motion ─────────────────────────────────────────
+   Replace all motion with a slow opacity pulse so the spinner
+   still communicates "loading" without any spatial movement.
+   ─────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .tri-path {
+    stroke-dashoffset: 0;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  .ring-1, .ring-2, .ring-3 {
+    transform: scale(0.6);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  .ring-2 { animation-delay: 500ms;  }
+  .ring-3 { animation-delay: 1000ms; }
+
+  .bit { animation: pulse 1.5s ease-in-out infinite; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1;   }
+    50%       { opacity: 0.2; }
+  }
+}

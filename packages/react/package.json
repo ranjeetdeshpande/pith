@@ -1,0 +1,64 @@
+{
+  "name": "@pith/react",
+  "version": "0.1.0",
+  "description": "React wrappers for Pith UI Web Components",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "pnpm build"
+  },
+  "keywords": [
+    "react",
+    "web-components",
+    "ui",
+    "pith"
+  ],
+  "author": "Ranjeet Deshpande",
+  "license": "MIT",
+  "homepage": "https://github.com/ranjeetdeshpande/pith#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ranjeetdeshpande/pith.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/ranjeetdeshpande/pith/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "lit": ">=3.0.0",
+    "@pith/ui": "workspace:*"
+  },
+  "dependencies": {
+    "@lit/react": "^1.0.5"
+  },
+  "devDependencies": {
+    "@pith/ui": "workspace:*",
+    "@types/react": "^18.3.0",
+    "lit": "^3.2.0",
+    "react": "^18.3.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.5.0"
+  }
+}

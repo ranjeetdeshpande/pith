@@ -1,0 +1,265 @@
+/* ═══════════════════════════════════════════════════════════
+   pith-file-upload — Shadow DOM styles
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Host & size tokens ──────────────────────────────────── */
+:host {
+  display: block;
+  --_fs:      var(--text-sm, 0.875rem);
+  --_icon:    2.5rem;
+  --_pad:     var(--space-8, 2rem);
+  --_item-h:  2.25rem;
+}
+
+:host([size="sm"]) {
+  --_fs:     var(--text-xs, 0.75rem);
+  --_icon:   2rem;
+  --_pad:    var(--space-6, 1.5rem);
+  --_item-h: 1.875rem;
+}
+
+:host([size="lg"]) {
+  --_fs:     var(--text-base, 1rem);
+  --_icon:   3rem;
+  --_pad:    var(--space-10, 2.5rem);
+  --_item-h: 2.75rem;
+}
+
+:host([disabled]) {
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+/* ── Root ────────────────────────────────────────────────── */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+}
+
+/* ── Visually-hidden native input ────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── Drop zone ───────────────────────────────────────────── */
+.zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--_pad);
+  border: 2px dashed var(--ui-border, #c8c8c2);
+  border-radius: var(--ui-radius, 6px);
+  background: var(--ui-surface-sunken, #f0f0ec);
+  cursor: pointer;
+  text-align: center;
+  transition:
+    border-color  var(--duration-fast, 150ms) ease,
+    background    var(--duration-fast, 150ms) ease,
+    box-shadow    var(--duration-fast, 150ms) ease;
+
+  &:hover {
+    border-color: var(--ui-primary, #1a1a18);
+    background: color-mix(in srgb, var(--ui-primary, #1a1a18) 4%, var(--ui-surface-sunken, #f0f0ec));
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--ui-primary, #1a1a18);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-focus-ring, #6366f1) 22%, transparent);
+  }
+
+  &.is-dragging {
+    border-color: var(--ui-primary, #1a1a18);
+    background: color-mix(in srgb, var(--ui-primary, #1a1a18) 8%, var(--ui-surface-sunken, #f0f0ec));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-focus-ring, #6366f1) 22%, transparent);
+  }
+
+  &.is-error {
+    border-color: var(--ui-danger, #dc2626);
+  }
+}
+
+/* ── Zone icon ───────────────────────────────────────────── */
+.zone-icon {
+  width: var(--_icon);
+  height: var(--_icon);
+  color: var(--ui-text-muted, #a3a39c);
+  flex-shrink: 0;
+  transition: color var(--duration-fast, 150ms) ease;
+
+  .zone:hover &,
+  .zone.is-dragging & {
+    color: var(--ui-primary, #1a1a18);
+  }
+}
+
+/* ── Zone text ───────────────────────────────────────────── */
+.zone-label {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: var(--_fs);
+  font-weight: var(--weight-medium, 500);
+  color: var(--ui-text, #1a1a18);
+  line-height: var(--leading-snug, 1.375);
+}
+
+.zone-sub {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--ui-text-muted, #a3a39c);
+}
+
+/* ── File list ───────────────────────────────────────────── */
+.file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1, 0.25rem);
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  min-height: var(--_item-h);
+  padding-inline: var(--space-3, 0.75rem);
+  background: var(--ui-surface, #fafaf8);
+  border: var(--ui-border-width, 1px) solid var(--ui-border, #c8c8c2);
+  border-radius: var(--ui-radius, 6px);
+  overflow: hidden;
+}
+
+.file-icon {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  color: var(--ui-text-muted, #a3a39c);
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2, 0.5rem);
+}
+
+.file-name {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: var(--_fs);
+  font-weight: var(--weight-medium, 500);
+  color: var(--ui-text, #1a1a18);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-size {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--ui-text-muted, #a3a39c);
+  flex-shrink: 0;
+}
+
+/* ── Remove button ───────────────────────────────────────── */
+.file-remove {
+  all: unset;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: var(--ui-radius-sm, 4px);
+  color: var(--ui-text-muted, #a3a39c);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-instant, 80ms) ease,
+    color            var(--duration-instant, 80ms) ease;
+
+  & svg { width: 0.875rem; height: 0.875rem; }
+
+  &:hover {
+    background: var(--ui-danger-subtle, #fef2f2);
+    color: var(--ui-danger, #dc2626);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ui-focus-ring, #6366f1);
+    outline-offset: 1px;
+  }
+}
+
+/* ── Message ─────────────────────────────────────────────── */
+.message {
+  margin: 0;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--ui-text-muted, #a3a39c);
+  line-height: var(--leading-normal, 1.5);
+
+  &.is-error { color: var(--ui-danger, #dc2626); }
+}
+
+/* ── Brutal theme ────────────────────────────────────────── */
+:host-context([data-theme="brutal"]) .zone {
+  border-radius: 0;
+  border-width: 2px;
+}
+
+:host-context([data-theme="brutal"]) .file-item {
+  border-radius: 0;
+  border-width: 2px;
+}
+
+:host-context([data-theme="brutal"]) .file-remove {
+  border-radius: 0;
+}
+
+/* ── Glass theme ─────────────────────────────────────────── */
+:host-context([data-theme="glass"]) .zone {
+  background: color-mix(in srgb, var(--ui-surface-sunken) 60%, transparent);
+  backdrop-filter: var(--ui-backdrop, blur(12px));
+  -webkit-backdrop-filter: var(--ui-backdrop, blur(12px));
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .zone,
+  .file-remove {
+    transition: none;
+  }
+}
+
+/* ── Forced colors ───────────────────────────────────────── */
+@media (forced-colors: active) {
+  .zone {
+    border: 2px dashed ButtonText;
+    background: Canvas;
+  }
+
+  .zone.is-dragging {
+    border-style: solid;
+  }
+
+  .file-item {
+    border: 1px solid ButtonText;
+  }
+
+  .file-remove:hover {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+}

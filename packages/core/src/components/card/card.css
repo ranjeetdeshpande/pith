@@ -1,0 +1,67 @@
+:host {
+  display: block;
+}
+
+.card {
+  background: var(--ui-surface-raised);
+  border: var(--ui-border-width, 1px) solid var(--ui-border);
+  border-radius: var(--ui-radius-lg);
+  overflow: hidden;
+  /* glass blur applies automatically — tokens.css sets --ui-backdrop:none for other themes */
+  backdrop-filter: var(--ui-backdrop, none);
+  -webkit-backdrop-filter: var(--ui-backdrop, none);
+  /* per-theme shadow: brutal = hard offset, ink = soft, glass = dark glow */
+  box-shadow: var(--ui-shadow-xs);
+  transition:
+    transform          200ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    box-shadow         200ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    background-color   300ms ease,
+    border-color       300ms ease,
+    border-radius      300ms ease;
+}
+
+/* ── Hoverable ── */
+:host([hoverable]) .card {
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--ui-shadow-lg);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.99);
+    box-shadow: var(--ui-shadow-xs);
+  }
+}
+
+/* ── Slots ── */
+.header {
+  padding: var(--space-5, 1.25rem) var(--space-6, 1.5rem);
+  border-bottom: var(--ui-border-width, 1px) solid var(--ui-border);
+  transition: border-color 300ms ease;
+
+  &:not(.has-content) { display: none; }
+}
+
+.body {
+  padding: var(--space-6, 1.5rem);
+}
+
+.footer {
+  padding: var(--space-4, 1rem) var(--space-6, 1.5rem);
+  border-top: var(--ui-border-width, 1px) solid var(--ui-border);
+  background-color: var(--ui-surface-sunken);
+  transition: background-color 300ms ease, border-color 300ms ease;
+
+  &:not(.has-content) { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: background-color 300ms ease, border-color 300ms ease;
+  }
+  :host([hoverable]) .card:hover {
+    transform: none;
+  }
+}

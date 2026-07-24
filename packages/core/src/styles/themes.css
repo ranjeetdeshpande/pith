@@ -1,0 +1,370 @@
+/* ═══════════════════════════════════════════════════════════
+   Pith — Theme Definitions
+   Each theme defines the full set of --ui-* semantic tokens.
+   CSS custom properties inherit into Shadow DOM — this is the
+   only mechanism components use for theming. No class leakage.
+
+   Usage: <body data-theme="ink">   (ink | glass | brutal)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Ink ────────────────────────────────────────────────────
+   Warm off-white paper. Editorial. Precise.
+   Suitable for: portfolios, documentation, blogs.
+   ─────────────────────────────────────────────────────────── */
+[data-theme="ink"],
+:root:not([data-theme]) {
+  color-scheme: light;
+
+  /* Surfaces */
+  --ui-surface:         #fafaf8;
+  --ui-surface-raised:  #f4f4f0;
+  --ui-surface-overlay: #eeeee9;
+  --ui-surface-sunken:  #f0f0ec;
+
+  /* Text */
+  --ui-text:            #1a1a18;
+  --ui-text-muted:      #4a4a46;
+  --ui-text-subtle:     #8a8a84;
+  --ui-text-on-primary: #fafaf8;
+
+  /* Borders */
+  --ui-border:          #e2e2dc;
+  --ui-border-strong:   #c0c0b8;
+
+  /* Interactive */
+  --ui-primary:         #1a1a18;
+  --ui-primary-fg:      #fafaf8;
+  --ui-primary-hover:   #2e2e2a;
+  --ui-focus-ring:      #1a1a18;
+
+  /* Feedback */
+  --ui-danger:          #dc2626;
+  --ui-danger-fg:       #fff;
+  --ui-danger-subtle:   #fef2f2;
+  --ui-success:         #16a34a;
+  --ui-success-fg:      #fff;
+  --ui-success-subtle:  #f0fdf4;
+  --ui-warning:         #d97706;
+  --ui-warning-fg:      #fff;
+  --ui-warning-subtle:  #fffbeb;
+
+  /* Shape */
+  --ui-radius-xs:   2px;
+  --ui-radius-sm:   4px;
+  --ui-radius:      6px;
+  --ui-radius-lg:   10px;
+  --ui-radius-xl:   16px;
+  --ui-radius-full: 9999px;
+
+  /* Shadows — warm-toned */
+  --ui-shadow-xs: 0 1px 2px rgba(26, 26, 24, 0.06);
+  --ui-shadow-sm: 0 1px 3px rgba(26, 26, 24, 0.08), 0 1px 2px rgba(26, 26, 24, 0.04);
+  --ui-shadow:    0 4px 6px rgba(26, 26, 24, 0.07), 0 2px 4px rgba(26, 26, 24, 0.04);
+  --ui-shadow-lg: 0 10px 15px rgba(26, 26, 24, 0.08), 0 4px 6px rgba(26, 26, 24, 0.04);
+  --ui-shadow-xl: 0 20px 25px rgba(26, 26, 24, 0.08), 0 8px 10px rgba(26, 26, 24, 0.04);
+
+  /* Backdrop */
+  --ui-backdrop: none;
+
+  /* Border dimensions */
+  --ui-border-width: 1px;
+  --ui-border-style: solid;
+
+  /* Tooltip: dark chip on light page */
+  --ui-tooltip-bg: rgba(26, 26, 24, 0.96);
+  --ui-tooltip-fg: #f5f5f0;
+  --ui-tooltip-arrow: rgba(26, 26, 24, 0.96);
+}
+
+/* ── Ink — dark mode ─────────────────────────────────────── */
+[data-theme="ink"][data-dark] {
+  color-scheme: dark;
+
+  --ui-surface:         #18181a;
+  --ui-surface-raised:  #232328;
+  --ui-surface-overlay: #2d2d34;
+  --ui-surface-sunken:  #141418;
+
+  --ui-text:            #f2f2f0;
+  --ui-text-muted:      #a0a09a;
+  --ui-text-subtle:     #606059;
+  --ui-text-on-primary: #18181a;
+
+  --ui-border:          #32322e;
+  --ui-border-strong:   #4a4a44;
+
+  --ui-primary:         #f2f2f0;
+  --ui-primary-fg:      #18181a;
+  --ui-primary-hover:   #ffffff;
+  --ui-focus-ring:      #a5b4fc;
+
+  --ui-danger:          #ef4444;
+  --ui-danger-fg:       #fff;
+  --ui-danger-subtle:   rgba(239, 68, 68, 0.15);
+  --ui-success:         #22c55e;
+  --ui-success-fg:      #fff;
+  --ui-success-subtle:  rgba(34, 197, 94, 0.15);
+  --ui-warning:         #f59e0b;
+  --ui-warning-fg:      #000;
+  --ui-warning-subtle:  rgba(245, 158, 11, 0.15);
+
+  --ui-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --ui-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4),  0 1px 2px rgba(0, 0, 0, 0.28);
+  --ui-shadow:    0 4px 6px rgba(0, 0, 0, 0.38), 0 2px 4px rgba(0, 0, 0, 0.28);
+  --ui-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4), 0 4px 6px rgba(0, 0, 0, 0.28);
+  --ui-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.4), 0 8px 10px rgba(0, 0, 0, 0.28);
+
+  /* Tooltip: light chip on dark page */
+  --ui-tooltip-bg: rgba(240, 240, 236, 0.97);
+  --ui-tooltip-fg: #1a1a18;
+  --ui-tooltip-arrow: rgba(240, 240, 236, 0.97);
+}
+
+/* ── Glass ──────────────────────────────────────────────────
+   Frosted glass. Works in both light and dark.
+   Without [data-dark]: translucent panels over a light tinted bg.
+   With    [data-dark]: translucent panels over a dark bg with blobs.
+   ─────────────────────────────────────────────────────────── */
+/* Light glass (default) */
+[data-theme="glass"] {
+  color-scheme: light;
+
+  /* Frosted white panels — enough opacity to show blur effect */
+  --ui-surface:         rgba(255, 255, 255, 0.52);
+  --ui-surface-raised:  rgba(255, 255, 255, 0.68);
+  --ui-surface-overlay: rgba(255, 255, 255, 0.84);
+  --ui-surface-sunken:  rgba(255, 255, 255, 0.36);
+
+  --ui-text:            rgba(0, 0, 0, 0.88);
+  --ui-text-muted:      rgba(0, 0, 0, 0.52);
+  --ui-text-subtle:     rgba(0, 0, 0, 0.32);
+  --ui-text-on-primary: #fff;
+
+  /* White border gives the "glass edge" highlight */
+  --ui-border:          rgba(255, 255, 255, 0.60);
+  --ui-border-strong:   rgba(255, 255, 255, 0.82);
+
+  /* Primary is translucent — every component using it becomes glassy.
+     --ui-primary-fg is dark indigo (not white) so text stays readable
+     against the near-transparent background on any page colour. */
+  --ui-primary:         rgba(99, 102, 241, 0.38);
+  --ui-primary-fg:      rgb(55, 48, 163);
+  --ui-primary-hover:   rgba(79, 70, 229, 0.58);
+  --ui-focus-ring:      rgba(99, 102, 241, 0.82);
+
+  --ui-danger:          rgba(220, 38, 38, 0.9);
+  --ui-danger-fg:       #fff;
+  --ui-danger-subtle:   rgba(220, 38, 38, 0.10);
+  --ui-success:         rgba(22, 163, 74, 0.9);
+  --ui-success-fg:      #fff;
+  --ui-success-subtle:  rgba(22, 163, 74, 0.10);
+  --ui-warning:         rgba(217, 119, 6, 0.9);
+  --ui-warning-fg:      #fff;
+  --ui-warning-subtle:  rgba(217, 119, 6, 0.10);
+
+  --ui-radius-xs:   6px;
+  --ui-radius-sm:   10px;
+  --ui-radius:      14px;
+  --ui-radius-lg:   20px;
+  --ui-radius-xl:   28px;
+  --ui-radius-full: 9999px;
+
+  --ui-shadow-xs: 0 1px 4px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255,255,255,0.5);
+  --ui-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.10), 0 0 0 1px rgba(255,255,255,0.5);
+  --ui-shadow:    0 8px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255,255,255,0.4);
+  --ui-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(255,255,255,0.3);
+  --ui-shadow-xl: 0 32px 64px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(255,255,255,0.2);
+
+  /* Stronger blur + saturation so frosted effect reads clearly */
+  --ui-backdrop: blur(24px) saturate(200%) brightness(1.06);
+
+  --ui-border-width: 1px;
+  --ui-border-style: solid;
+
+  /* Tooltip: dark chip on light page */
+  --ui-tooltip-bg: rgba(26, 26, 24, 0.96);
+  --ui-tooltip-fg: #f5f5f0;
+  --ui-tooltip-arrow: rgba(26, 26, 24, 0.96);
+}
+
+/* Dark glass (with [data-dark]) */
+[data-theme="glass"][data-dark] {
+  color-scheme: dark;
+
+  --ui-surface:         rgba(255, 255, 255, 0.07);
+  --ui-surface-raised:  rgba(255, 255, 255, 0.13);
+  --ui-surface-overlay: rgba(255, 255, 255, 0.20);
+  --ui-surface-sunken:  rgba(0, 0, 0, 0.18);
+
+  --ui-text:            rgba(255, 255, 255, 0.92);
+  --ui-text-muted:      rgba(255, 255, 255, 0.58);
+  --ui-text-subtle:     rgba(255, 255, 255, 0.36);
+  --ui-text-on-primary: #fff;
+
+  --ui-border:          rgba(255, 255, 255, 0.18);
+  --ui-border-strong:   rgba(255, 255, 255, 0.32);
+
+  --ui-primary:         rgba(99, 102, 241, 0.88);
+  --ui-primary-fg:      #fff;
+  --ui-primary-hover:   rgba(99, 102, 241, 1);
+  --ui-focus-ring:      rgba(165, 180, 252, 0.9);
+
+  --ui-danger:          rgba(239, 68, 68, 0.85);
+  --ui-danger-fg:       #fff;
+  --ui-danger-subtle:   rgba(239, 68, 68, 0.15);
+  --ui-success:         rgba(34, 197, 94, 0.85);
+  --ui-success-fg:      #fff;
+  --ui-success-subtle:  rgba(34, 197, 94, 0.15);
+  --ui-warning:         rgba(251, 191, 36, 0.85);
+  --ui-warning-fg:      #000;
+  --ui-warning-subtle:  rgba(251, 191, 36, 0.15);
+
+  --ui-radius-xs:   6px;
+  --ui-radius-sm:   10px;
+  --ui-radius:      14px;
+  --ui-radius-lg:   20px;
+  --ui-radius-xl:   28px;
+  --ui-radius-full: 9999px;
+
+  --ui-shadow-xs: 0 1px 4px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255,255,255,0.08);
+  --ui-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.30), 0 0 0 1px rgba(255,255,255,0.08);
+  --ui-shadow:    0 8px 24px rgba(0, 0, 0, 0.36), 0 0 0 1px rgba(255,255,255,0.08);
+  --ui-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(255,255,255,0.06);
+  --ui-shadow-xl: 0 32px 64px rgba(0, 0, 0, 0.48), 0 0 0 1px rgba(255,255,255,0.05);
+
+  --ui-backdrop: blur(24px) saturate(180%) brightness(1.12);
+
+  --ui-border-width: 1px;
+  --ui-border-style: solid;
+
+  /* Tooltip: near-white chip on dark page */
+  --ui-tooltip-bg: rgba(240, 240, 248, 0.97);
+  --ui-tooltip-fg: #0c0c18;
+  --ui-tooltip-arrow: rgba(240, 240, 248, 0.97);
+}
+
+/* ── Brutal ─────────────────────────────────────────────────
+   Hard edges. Thick borders. Offset shadows. No mercy.
+   Suitable for: bold portfolios, editorial sites, striking brands.
+   ─────────────────────────────────────────────────────────── */
+[data-theme="brutal"] {
+  color-scheme: light;
+
+  /* Surfaces */
+  --ui-surface:         #ffffff;
+  --ui-surface-raised:  #f5f5f5;
+  --ui-surface-overlay: #ececec;
+  --ui-surface-sunken:  #f0f0f0;
+
+  /* Text */
+  --ui-text:            #0a0a0a;
+  --ui-text-muted:      #3d3d3d;
+  --ui-text-subtle:     #888888;
+  --ui-text-on-primary: #ffffff;
+
+  /* Borders — always hard black */
+  --ui-border:          #0a0a0a;
+  --ui-border-strong:   #0a0a0a;
+
+  /* Interactive */
+  --ui-primary:         #0a0a0a;
+  --ui-primary-fg:      #ffffff;
+  --ui-primary-hover:   #1f1f1f;
+  --ui-focus-ring:      #0a0a0a;
+
+  /* Feedback — loud and obvious */
+  --ui-danger:          #ff2020;
+  --ui-danger-fg:       #ffffff;
+  --ui-danger-subtle:   #ffe0e0;
+  --ui-success:         #00c853;
+  --ui-success-fg:      #000000;
+  --ui-success-subtle:  #d8ffe8;
+  --ui-warning:         #ffaa00;
+  --ui-warning-fg:      #000000;
+  --ui-warning-subtle:  #fff3cc;
+
+  /* Shape — brutalism has no curves */
+  --ui-radius-xs:   0px;
+  --ui-radius-sm:   0px;
+  --ui-radius:      0px;
+  --ui-radius-lg:   0px;
+  --ui-radius-xl:   0px;
+  --ui-radius-full: 0px;
+
+  /* Shadows — hard offset, no blur; dark gray not pure black */
+  --ui-shadow-xs: 1px 1px 0px #3d3d3d;
+  --ui-shadow-sm: 2px 2px 0px #3d3d3d;
+  --ui-shadow:    4px 4px 0px #3d3d3d;
+  --ui-shadow-lg: 6px 6px 0px #3d3d3d;
+  --ui-shadow-xl: 8px 8px 0px #3d3d3d;
+
+  /* Backdrop */
+  --ui-backdrop: none;
+
+  /* Border dimensions — thicker for brutal feel */
+  --ui-border-width: 2px;
+  --ui-border-style: solid;
+
+  /* Tooltip: hard black chip, always legible */
+  --ui-tooltip-bg: #0a0a0a;
+  --ui-tooltip-fg: #ffffff;
+  --ui-tooltip-arrow: #0a0a0a;
+
+  /* Pills indicator — inverted: dark pill on light container, light text on dark pill */
+  --ui-indicator-bg: var(--ui-primary);
+  --ui-indicator-fg: var(--ui-primary-fg);
+}
+
+/* ── Brutal — dark mode ───────────────────────────────── */
+[data-theme="brutal"][data-dark] {
+  color-scheme: dark;
+
+  --ui-surface:         #0a0a0a;
+  --ui-surface-raised:  #141414;
+  --ui-surface-overlay: #1e1e1e;
+  --ui-surface-sunken:  #050505;
+
+  --ui-text:            #ffffff;
+  --ui-text-muted:      #c0c0c0;
+  --ui-text-subtle:     #707070;
+  --ui-text-on-primary: #000000;
+
+  --ui-border:          #ffffff;
+  --ui-border-strong:   #ffffff;
+
+  --ui-primary:         #ffffff;
+  --ui-primary-fg:      #000000;
+  --ui-primary-hover:   #e0e0e0;
+  --ui-focus-ring:      #ffffff;
+
+  --ui-danger:          #ff4040;
+  --ui-danger-fg:       #ffffff;
+  --ui-danger-subtle:   rgba(255, 64, 64, 0.18);
+  --ui-success:         #00e666;
+  --ui-success-fg:      #000000;
+  --ui-success-subtle:  rgba(0, 230, 102, 0.18);
+  --ui-warning:         #ffcc00;
+  --ui-warning-fg:      #000000;
+  --ui-warning-subtle:  rgba(255, 204, 0, 0.18);
+
+  /* Hard light-gray shadows — inverted, not pure white */
+  --ui-shadow-xs: 1px 1px 0px #c8c8c8;
+  --ui-shadow-sm: 2px 2px 0px #c8c8c8;
+  --ui-shadow:    4px 4px 0px #c8c8c8;
+  --ui-shadow-lg: 6px 6px 0px #c8c8c8;
+  --ui-shadow-xl: 8px 8px 0px #c8c8c8;
+
+  --ui-tooltip-bg: #ffffff;
+  --ui-tooltip-fg: #0a0a0a;
+  --ui-tooltip-arrow: #ffffff;
+}
+
+/* ── :has() document-level smart layouts ───────────────────
+   These demonstrate :has() for contextual layout adaptation.
+   Components in specific containers get contextual treatment.
+   ─────────────────────────────────────────────────────────── */
+
+/* When a page has an open modal, prevent body scroll */
+body:has(pith-modal[open]) {
+  overflow: hidden;
+}

@@ -1,0 +1,82 @@
+/* ═══════════════════════════════════════════════════════════
+   pith-sidebar — Shadow DOM styles
+   ═══════════════════════════════════════════════════════════ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  height: 100%;
+  /* Public API — override on the host element or :root */
+  --pith-sidebar-width:           240px;
+  --pith-sidebar-collapsed-width:  52px;
+}
+
+/* ── Root panel ──────────────────────────────────────────── */
+.root {
+  display: flex;
+  flex-direction: column;
+  width: var(--pith-sidebar-width);
+  height: 100%;
+  background: var(--ui-surface-raised);
+  border-right: var(--ui-border-width, 1px) solid var(--ui-border);
+  overflow: hidden;
+  transition:
+    width            250ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    background-color 300ms ease,
+    border-color     300ms ease;
+}
+
+/* Collapsed: narrow to icon-only rail */
+:host([collapsed]) .root {
+  width: var(--pith-sidebar-collapsed-width);
+}
+
+/* ── Slot regions ────────────────────────────────────────── */
+.header-slot {
+  flex-shrink: 0;
+}
+
+.content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.375rem 0.5rem;
+}
+
+/* Thin scrollbar — doesn't steal space */
+.content::-webkit-scrollbar        { width: 3px; }
+.content::-webkit-scrollbar-track  { background: transparent; }
+.content::-webkit-scrollbar-thumb  {
+  background: var(--ui-border);
+  border-radius: var(--ui-radius-full, 9999px);
+}
+
+.footer-slot {
+  flex-shrink: 0;
+}
+
+/* ════════════════════════════════════════════════════════════
+   BRUTAL THEME — 2px border, snappy collapse
+   ════════════════════════════════════════════════════════════ */
+
+:host-context([data-theme="brutal"]) .root {
+  border-right: var(--ui-border-width, 2px) solid var(--ui-border);
+  transition:
+    width            160ms var(--ease-snappy, cubic-bezier(0.2, 0, 0, 1)),
+    background-color 300ms ease,
+    border-color     300ms ease;
+}
+
+/* ════════════════════════════════════════════════════════════
+   GLASS THEME — frosted panel
+   ════════════════════════════════════════════════════════════ */
+
+:host-context([data-theme="glass"]) .root {
+  background: rgba(255, 255, 255, 0.06);
+  border-right-color: rgba(255, 255, 255, 0.36);
+  backdrop-filter: var(--ui-backdrop);
+  -webkit-backdrop-filter: var(--ui-backdrop);
+  /* Right-edge rim highlight — glass catching light */
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.45);
+}

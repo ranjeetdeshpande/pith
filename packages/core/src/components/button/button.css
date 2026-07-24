@@ -1,0 +1,479 @@
+/* ═══════════════════════════════════════════════════════════
+   pith-button — Shadow DOM styles
+   ─────────────────────────────────────────────────────────
+   CSS features used:
+     • Native nesting (&)
+     • CSS custom properties (all visual values are tokens)
+     • @container queries (adapts to space, not viewport)
+     • :has() (icon presence, state detection)
+     • @media (prefers-reduced-motion)
+     • @media (forced-colors) for high-contrast a11y
+   ─────────────────────────────────────────────────────────
+   All --ui-* vars are inherited from the light DOM's
+   [data-theme] attribute. Shadow DOM never reads globals
+   it doesn't own. Zero style leakage in either direction.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Host ───────────────────────────────────────────────────
+   :host is the custom element itself in the light DOM.
+   NO container-type here: inline-size containment sets the
+   element's intrinsic inline-size to 0, which collapses
+   buttons inside flex/grid parents. Container queries still
+   work when consumers apply containment externally — queries
+   traverse the composed tree (crossing shadow boundaries).
+   ─────────────────────────────────────────────────────────── */
+:host {
+  display: inline-block;
+  vertical-align: middle;
+  isolation: isolate;
+}
+
+/* Disable interaction at the host level when disabled or loading.
+   This prevents ghost-clicks on the shadow boundary. */
+:host([disabled]),
+:host([loading]) {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Core button reset ──────────────────────────────────────
+   We use a real <button> inside Shadow DOM for full native
+   a11y (keyboard, form association, ARIA role="button").
+   `all: unset` wipes browser UA styles, then we build up.
+   ─────────────────────────────────────────────────────────── */
+.btn {
+  all: unset;
+  box-sizing: border-box;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2, 0.5rem);
+
+  /* Typography */
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-weight: var(--weight-medium, 500);
+  font-size: var(--text-sm, 0.875rem);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  text-decoration: none;
+
+  /* Shape — driven entirely by active theme tokens */
+  border-radius: var(--ui-radius, 6px);
+  border-width: var(--ui-border-width, 1px);
+  border-style: solid;
+  border-color: transparent;
+
+  /* Sizing — overridden per size variant */
+  padding-block:  var(--_btn-py, var(--space-2, 0.5rem));
+  padding-inline: var(--_btn-px, var(--space-4, 1rem));
+
+  /* Interaction */
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow: hidden;
+  outline: none; /* :focus-visible replaces outline for a11y */
+
+  /* Glass: backdrop-filter inherits from --ui-backdrop CSS var */
+  backdrop-filter: var(--ui-backdrop, none);
+  -webkit-backdrop-filter: var(--ui-backdrop, none);
+
+  /* Base transitions */
+  transition:
+    transform        var(--duration-fast, 150ms) var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    box-shadow       var(--duration-fast, 150ms) var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    background-color var(--duration-fast, 150ms) ease,
+    border-color     var(--duration-fast, 150ms) ease,
+    opacity          var(--duration-fast, 150ms) ease;
+
+  /* ── Hover overlay ──
+     A pseudo-element of currentColor at low opacity gives
+     us a hover tint that works on ANY background color,
+     without hardcoding a lighter/darker variant. */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: currentColor;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-instant, 80ms);
+  }
+}
+
+/* ── Hover ──────────────────────────────────────────────────
+   Subtle lift + shadow. The overlay tint handles color variation.
+   ─────────────────────────────────────────────────────────── */
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--ui-shadow, 0 4px 12px rgba(0, 0, 0, 0.12));
+
+  &::after {
+    opacity: 0.07;
+  }
+}
+
+/* ── Active / press ─────────────────────────────────────────
+   Scale down slightly for tactile "press" feedback.
+   ─────────────────────────────────────────────────────────── */
+.btn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: none;
+
+  &::after {
+    opacity: 0.14;
+  }
+}
+
+/* ── Focus ring — a11y ──────────────────────────────────────
+   :focus-visible only applies when focused via keyboard or
+   equivalent (not mouse click). Keeps mouse UX clean while
+   fully supporting keyboard-only users.
+   ─────────────────────────────────────────────────────────── */
+.btn:focus-visible {
+  outline: 2.5px solid var(--ui-focus-ring, #6366f1);
+  outline-offset: 3px;
+  /* Don't remove transform — focus + hover can coexist */
+}
+
+/* ── Disabled ───────────────────────────────────────────────
+   Native `disabled` attribute removes from tab order and
+   fires no click events. We still apply visual treatment.
+   ─────────────────────────────────────────────────────────── */
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+
+  &::after {
+    display: none;
+  }
+}
+
+/* ── Loading ────────────────────────────────────────────────
+   aria-busy="true" is the ARIA signal. CSS derives from it.
+   Keeps accessibility markup as the source of truth.
+   ─────────────────────────────────────────────────────────── */
+.btn[aria-busy="true"] {
+  cursor: wait;
+  transform: none;
+
+  /* :has() — detect the loading spinner being present
+     and hide label so spinner occupies the same space */
+  &:has(.spinner) .label {
+    opacity: 0;
+  }
+
+  /* Fallback for browsers without :has() support */
+  & .label {
+    opacity: 0;
+  }
+
+  & .spinner {
+    opacity: 1;
+  }
+}
+
+/* ── Variants ───────────────────────────────────────────────
+   Variant classes set only background + color + border.
+   All other values come from base .btn styles above.
+   ─────────────────────────────────────────────────────────── */
+.btn.primary {
+  background-color: var(--ui-primary, #1a1a18);
+  color:            var(--ui-primary-fg, #fafaf8);
+  border-color:     transparent;
+}
+
+.btn.secondary {
+  background-color: var(--ui-surface-raised, #f4f4f0);
+  color:            var(--ui-text, #1a1a18);
+  border-color:     var(--ui-border, #e2e2dc);
+}
+
+.btn.ghost {
+  background-color: transparent;
+  color:            var(--ui-text, #1a1a18);
+  border-color:     var(--ui-border, #e2e2dc);
+}
+
+.btn.danger {
+  background-color: var(--ui-danger, #dc2626);
+  color:            var(--ui-danger-fg, #fff);
+  border-color:     transparent;
+}
+
+/* ── Sizes ──────────────────────────────────────────────────
+   Override the --_btn-py / --_btn-px internal vars.
+   No !important. Clean cascade.
+   ─────────────────────────────────────────────────────────── */
+.btn.sm {
+  --_btn-py: var(--space-1-5, 0.375rem);
+  --_btn-px: var(--space-3,   0.75rem);
+
+  font-size: var(--text-xs, 0.75rem);
+  gap:       var(--space-1, 0.25rem);
+}
+
+.btn.lg {
+  --_btn-py: var(--space-3,   0.75rem);
+  --_btn-px: var(--space-6,   1.5rem);
+
+  font-size: var(--text-base, 1rem);
+  gap:       var(--space-2-5, 0.625rem);
+}
+
+/* ── Icon slots ─────────────────────────────────────────────
+   Wrapper spans are always in the DOM. When their slot has
+   no assigned nodes, we add .is-empty (set via JS slotchange).
+   :has() detects icon presence to adjust internal spacing.
+   ─────────────────────────────────────────────────────────── */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.1em;
+  line-height: 0;
+  /* Prevent icon from stretching on flex container */
+  align-self: center;
+
+  &.is-empty {
+    display: none;
+  }
+}
+
+/* :has() — when an icon is present, tighten the inset padding */
+.btn:has(.icon-start:not(.is-empty)) {
+  padding-inline-start: var(--_btn-px-icon, calc(var(--_btn-px, 1rem) * 0.8));
+}
+
+.btn:has(.icon-end:not(.is-empty)) {
+  padding-inline-end: var(--_btn-px-icon, calc(var(--_btn-px, 1rem) * 0.8));
+}
+
+/* Label wrapper — transitions opacity for loading state.
+   Must NOT be display:contents — that removes the box and
+   breaks opacity transitions (opacity has nothing to paint). */
+.label {
+  display: inline-flex;
+  align-items: center;
+  transition: opacity var(--duration-fast, 150ms) ease;
+}
+
+/* Hide label wrapper when slot has no text content (icon-only mode) */
+.label.is-empty {
+  display: none;
+}
+
+/* Icon-only: use block-axis padding on inline axis → square button.
+   Placed after icon rules so it overrides their padding-inline-start. */
+.btn:has(.label.is-empty) {
+  padding-inline: var(--_btn-py, var(--space-2, 0.5rem));
+}
+
+/* ── Loading spinner ────────────────────────────────────────
+   Absolutely positioned over the button centre.
+   Fades in when aria-busy="true" is present.
+   ─────────────────────────────────────────────────────────── */
+.spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast, 150ms) ease;
+}
+
+/* pith-spinner inside the loading wrapper — size it to match button text */
+.spinner pith-spinner {
+  width: 1.1em;
+  height: 1.1em;
+}
+
+/* ── Container queries ──────────────────────────────────────
+   These fire when THE COMPONENT's own width is constrained
+   by its parent — not the viewport. A button in a sidebar,
+   a table cell, or a card footer all adapt independently.
+   ─────────────────────────────────────────────────────────── */
+
+/* Narrow space: slim padding */
+@container pith-btn (max-width: 300px) {
+  .btn {
+    --_btn-px: var(--space-3, 0.75rem);
+  }
+}
+
+/* Tight space: reduce padding further + shrink font */
+@container pith-btn (max-width: 140px) {
+  .btn {
+    --_btn-px: var(--space-2, 0.5rem);
+
+    font-size: var(--text-xs, 0.75rem);
+  }
+}
+
+/* Very tight: icon-only mode — hide label text, go square */
+@container pith-btn (max-width: 60px) {
+  .label {
+    /* Visually hidden but accessible to screen readers */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .btn {
+    --_btn-px: var(--_btn-py, var(--space-2, 0.5rem));
+
+    aspect-ratio: 1;
+  }
+}
+
+/* ══ Glass overrides ══════════════════════════════════════════
+   Refraction glass: the body is nearly transparent — the colour
+   lives in the edges: a tinted border, a white top-rim highlight
+   (inset shadow), and a soft halo, exactly like light bending
+   through a glass object. backdrop-filter blur is inherited from
+   var(--ui-backdrop) on the base .btn rule above.
+   ════════════════════════════════════════════════════════════ */
+
+/* Primary — indigo tinted glass */
+:host-context([data-theme="glass"]) .btn.primary {
+  background: rgba(99, 102, 241, 0.10);
+  border-color: rgba(149, 152, 255, 0.52);
+  color: rgb(67, 56, 202);   /* indigo-700: readable on any bg */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.68),  /* top rim light */
+    0 0 0 1px rgba(99, 102, 241, 0.12),        /* edge halo */
+    0 4px 28px rgba(99, 102, 241, 0.16);       /* coloured depth */
+}
+
+:host-context([data-theme="glass"]) .btn.primary:hover {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(149, 152, 255, 0.68);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 0 0 1px rgba(99, 102, 241, 0.22),
+    0 6px 36px rgba(99, 102, 241, 0.28);
+}
+
+/* Secondary — white glass */
+:host-context([data-theme="glass"]) .btn.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.52);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+:host-context([data-theme="glass"]) .btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.70);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 4px 18px rgba(0, 0, 0, 0.07);
+}
+
+/* Ghost — barely-there glass chip with indigo-tinted border so it
+   remains visible on both light and dark glass pages. */
+:host-context([data-theme="glass"]) .btn.ghost {
+  background: rgba(99, 102, 241, 0.05);
+  border-color: rgba(149, 152, 255, 0.34);
+  color: rgb(67, 56, 202);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
+}
+
+:host-context([data-theme="glass"]) .btn.ghost:hover {
+  background: rgba(99, 102, 241, 0.11);
+  border-color: rgba(149, 152, 255, 0.54);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 0 14px rgba(99, 102, 241, 0.10);
+}
+
+/* Danger — red glass */
+:host-context([data-theme="glass"]) .btn.danger {
+  background: rgba(220, 38, 38, 0.10);
+  border-color: rgba(252, 165, 165, 0.54);
+  color: rgb(153, 27, 27);   /* red-800: readable */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    0 0 0 1px rgba(220, 38, 38, 0.10),
+    0 4px 24px rgba(220, 38, 38, 0.14);
+}
+
+:host-context([data-theme="glass"]) .btn.danger:hover {
+  background: rgba(220, 38, 38, 0.18);
+  border-color: rgba(252, 165, 165, 0.70);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.70),
+    0 0 0 1px rgba(220, 38, 38, 0.18),
+    0 6px 32px rgba(220, 38, 38, 0.22);
+}
+
+/* ── High contrast mode ─────────────────────────────────────
+   @media (forced-colors: active) fires in Windows High
+   Contrast mode and similar OS-level accessibility settings.
+   We explicitly use system colour keywords here.
+   ─────────────────────────────────────────────────────────── */
+@media (forced-colors: active) {
+  .btn {
+    border: 2px solid ButtonText;
+    background-color: ButtonFace;
+    color: ButtonText;
+    forced-color-adjust: none;
+
+    &:focus-visible {
+      outline: 3px solid Highlight;
+      outline-offset: 2px;
+    }
+
+    &:disabled,
+    &[aria-disabled="true"] {
+      border-color: GrayText;
+      color: GrayText;
+    }
+
+    &::after {
+      display: none; /* No overlay in high contrast — OS handles it */
+    }
+  }
+
+  .spinner pith-spinner {
+    color: ButtonText;
+  }
+}
+
+/* ── Reduced motion ─────────────────────────────────────────
+   WCAG 2.1 SC 2.3.3 (AAA): respect prefers-reduced-motion.
+   We keep instant opacity feedback (functional) but kill
+   all transforms, shadows, and spinner animation.
+   ─────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition:
+      opacity          var(--duration-fast, 150ms) ease,
+      background-color var(--duration-fast, 150ms) ease;
+
+    &:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    &:active {
+      transform: none;
+    }
+  }
+}

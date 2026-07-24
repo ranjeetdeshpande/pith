@@ -1,0 +1,58 @@
+/* ═══════════════════════════════════════════════════════════
+   pith-counter — Shadow DOM styles
+   ═══════════════════════════════════════════════════════════ */
+
+:host {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  line-height: var(--leading-tight, 1.25);
+}
+
+.counter {
+  display: inline-flex;
+  align-items: baseline;
+  color: var(--ui-text);
+  transition: color 300ms ease;
+}
+
+/* Prefix / suffix – smaller, muted, seat to baseline */
+.prefix,
+.suffix {
+  font-size: 0.6em;
+  font-weight: var(--weight-semibold, 600);
+  color: var(--ui-text-muted);
+  align-self: flex-end;
+  padding-bottom: 0.15em;
+  transition: color 300ms ease;
+  letter-spacing: 0;
+}
+
+/* Leading prefix needs a small right gap */
+.prefix { margin-right: 0.1em; }
+.suffix { margin-left: 0.06em; }
+
+/* The numeric value stays tabular so digits don't shift width */
+.number {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* ── Brutal: monospace, bold, tight tracking ─────────────── */
+:host-context([data-theme="brutal"]) .counter {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold, 700);
+  letter-spacing: -0.04em;
+}
+
+:host-context([data-theme="brutal"]) .prefix,
+:host-context([data-theme="brutal"]) .suffix {
+  color: var(--ui-text);
+  font-weight: var(--weight-bold, 700);
+}
+
+/* ── Glass dark: subtle luminous glow ────────────────────── */
+:host-context([data-theme="glass"][data-dark]) .number {
+  text-shadow: 0 0 28px rgba(163, 180, 252, 0.28);
+}

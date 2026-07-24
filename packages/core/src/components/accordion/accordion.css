@@ -1,0 +1,120 @@
+/* ═══════════════════════════════════════════════════════════
+   pith-accordion — Shadow DOM styles
+   ═══════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+}
+
+/* ════════════════════════════════════════════════════════════
+   DEFAULT VARIANT — contained card, shared background
+   ════════════════════════════════════════════════════════════ */
+
+.root {
+  background: var(--ui-surface-raised);
+  border: var(--ui-border-width, 1px) solid var(--ui-border);
+  border-radius: var(--ui-radius-lg);
+  overflow: hidden;
+  /* Glass blur propagates from the parent page background, not the root */
+  transition:
+    background-color 300ms ease,
+    border-color     300ms ease,
+    border-radius    300ms ease;
+}
+
+/* Dividers between items (via ::slotted on the host element).
+   Works because pith-accordion-item's :host has no `border` rule —
+   so ::slotted() can freely set it.                              */
+::slotted(pith-accordion-item:not(:first-child)) {
+  border-top: var(--ui-border-width, 1px) solid var(--ui-border);
+  transition: border-color 300ms ease;
+}
+
+/* ════════════════════════════════════════════════════════════
+   FLUSH VARIANT — no container, just ruled lines
+   ════════════════════════════════════════════════════════════ */
+
+:host([variant="flush"]) .root {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+
+:host([variant="flush"]) ::slotted(pith-accordion-item) {
+  border-bottom: var(--ui-border-width, 1px) solid var(--ui-border);
+  transition: border-color 300ms ease;
+}
+
+:host([variant="flush"]) ::slotted(pith-accordion-item:first-child) {
+  border-top: var(--ui-border-width, 1px) solid var(--ui-border);
+}
+
+/* Remove the default dividers in flush mode */
+:host([variant="flush"]) ::slotted(pith-accordion-item:not(:first-child)) {
+  border-top: none;
+}
+
+/* ════════════════════════════════════════════════════════════
+   SEPARATED VARIANT — each item is its own card with gap
+   Uses CSS custom properties to pass card styles to items.
+   Custom properties cascade naturally from host into child
+   shadow DOMs without needing ::slotted().
+   ════════════════════════════════════════════════════════════ */
+
+:host([variant="separated"]) {
+  /* These cascade into pith-accordion-item shadow DOM */
+  --pith-ai-bg:     var(--ui-surface-raised);
+  --pith-ai-border: var(--ui-border-width, 1px) solid var(--ui-border);
+  --pith-ai-radius: var(--ui-radius-lg);
+  --pith-ai-shadow: var(--ui-shadow-xs);
+}
+
+:host([variant="separated"]) .root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+
+/* No dividers in separated — items have their own borders */
+:host([variant="separated"]) ::slotted(pith-accordion-item:not(:first-child)) {
+  border-top: none;
+}
+
+/* ════════════════════════════════════════════════════════════
+   BRUTAL THEME
+   Hard 2px borders · hard offset shadow · no border-radius
+   ════════════════════════════════════════════════════════════ */
+
+:host-context([data-theme="brutal"]) .root {
+  border-radius: 0;
+  box-shadow: var(--ui-shadow);
+}
+
+:host-context([data-theme="brutal"])[variant="separated"] {
+  --pith-ai-radius: 0px;
+  --pith-ai-shadow: var(--ui-shadow);
+  gap: 0.5rem;
+}
+
+/* ════════════════════════════════════════════════════════════
+   GLASS THEME
+   Frosted container with backdrop-filter
+   ════════════════════════════════════════════════════════════ */
+
+:host-context([data-theme="glass"]) .root {
+  backdrop-filter: var(--ui-backdrop);
+  -webkit-backdrop-filter: var(--ui-backdrop);
+}
+
+/* Glass separated: each item gets its own frosted surface */
+:host-context([data-theme="glass"])[variant="separated"] {
+  --pith-ai-bg: var(--ui-surface-raised);
+  /* backdrop-filter set per-item in accordion-item.css */
+}

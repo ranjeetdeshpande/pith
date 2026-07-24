@@ -1,0 +1,183 @@
+/* ═══════════════════════════════════════════════════════════
+   pith-sidebar-item — Shadow DOM styles
+   ═══════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+  /* No `border` on :host — keeps ::slotted() usable by parent */
+}
+
+:host([disabled]) {
+  pointer-events: none;
+}
+
+/* ── Item (rendered as <a> or <button>) ──────────────────── */
+.item {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--ui-radius-sm);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: var(--weight-medium, 500);
+  color: var(--ui-text-muted);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  transition:
+    background-color 150ms ease,
+    color            150ms ease,
+    box-shadow       150ms ease;
+}
+
+.item:hover {
+  background: var(--ui-surface-overlay);
+  color: var(--ui-text);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--ui-focus-ring);
+  outline-offset: -2px;
+  background: var(--ui-surface-overlay);
+  color: var(--ui-text);
+}
+
+/* ── Disabled ────────────────────────────────────────────── */
+:host([disabled]) .item {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Active / current page ───────────────────────────────── */
+:host([active]) .item {
+  background: var(--ui-primary);
+  color: var(--ui-primary-fg);
+}
+
+:host([active]) .item:hover {
+  background: var(--ui-primary-hover);
+  color: var(--ui-primary-fg);
+}
+
+/* ════════════════════════════════════════════════════════════
+   GLASS THEME — glass-chip hover and active states
+   ════════════════════════════════════════════════════════════ */
+
+:host-context([data-theme="glass"]) .item:hover {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Active: --ui-primary is now translucent indigo — layer a rim highlight */
+:host([active]):host-context([data-theme="glass"]) .item {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    0 0 0 1px rgba(99, 102, 241, 0.14),
+    0 2px 16px rgba(99, 102, 241, 0.14);
+}
+
+/* ── Layout slots ────────────────────────────────────────── */
+.icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  line-height: 0;
+  transition: color 150ms ease;
+}
+
+.icon.is-empty {
+  display: none;
+}
+
+.label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 150ms ease, max-width 250ms var(--ease-out);
+}
+
+.badge-slot {
+  flex-shrink: 0;
+  display: inline-flex;
+  line-height: 0;
+}
+
+.badge-slot.is-empty {
+  display: none;
+}
+
+/* ════════════════════════════════════════════════════════════
+   COLLAPSED STATE
+   :host-context(pith-sidebar[collapsed]) traverses up the
+   composed tree — works even when item is inside a section.
+   ════════════════════════════════════════════════════════════ */
+
+:host-context(pith-sidebar[collapsed]) .item {
+  justify-content: center;
+  padding: 0.625rem;
+  gap: 0;
+}
+
+:host-context(pith-sidebar[collapsed]) .label,
+:host-context(pith-sidebar[collapsed]) .badge-slot {
+  display: none;
+}
+
+:host-context(pith-sidebar[collapsed]) .icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* ════════════════════════════════════════════════════════════
+   BRUTAL THEME
+   Hard mono font · inverted active · inverted hover
+   ════════════════════════════════════════════════════════════ */
+
+:host-context([data-theme="brutal"]) .item {
+  border-radius: 0;
+  font-family: var(--font-mono, monospace);
+  font-weight: var(--weight-bold, 700);
+  letter-spacing: -0.02em;
+}
+
+:host-context([data-theme="brutal"]) .item:hover {
+  background: var(--ui-surface-overlay);
+  color: var(--ui-text);
+}
+
+:host-context([data-theme="brutal"])[active] .item {
+  background: var(--ui-primary);
+  color: var(--ui-primary-fg);
+  box-shadow: var(--ui-shadow-xs);
+}
+
+/* ════════════════════════════════════════════════════════════
+   GLASS THEME
+   Frosted active item
+   ════════════════════════════════════════════════════════════ */
+
+:host-context([data-theme="glass"])[active] .item {
+  backdrop-filter: var(--ui-backdrop);
+  -webkit-backdrop-filter: var(--ui-backdrop);
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .item,
+  .label {
+    transition: none;
+  }
+}

@@ -1,0 +1,243 @@
+/* ═══════════════════════════════════════════════════════════
+   pith-select — Shadow DOM styles
+   ═══════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+  position: relative;
+  /* size tokens */
+  --_fs: var(--text-sm, 0.875rem);
+  --_h: 2.25rem;
+  --_py: 0.5rem;
+  --_px: 0.75rem;
+}
+
+:host([size="sm"]) { --_fs: var(--text-xs, 0.75rem);  --_h: 1.875rem; --_py: 0.375rem; --_px: 0.625rem; }
+:host([size="lg"]) { --_fs: var(--text-base, 1rem);   --_h: 2.75rem;  --_py: 0.625rem; --_px: 1rem; }
+:host([disabled])  { pointer-events: none; opacity: 0.45; }
+
+/* ── Root ────────────────────────────────────────────────── */
+.root {
+  position: relative;
+  width: 100%;
+}
+
+/* ── Shared trigger shell ────────────────────────────────── */
+.trigger-btn,
+.trigger-wrapper {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  width: 100%;
+  height: var(--_h);
+  padding-inline: var(--_px);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: var(--_fs);
+  color: var(--ui-text, #1a1a18);
+  background: var(--ui-surface, #fafaf8);
+  border: var(--ui-border-width, 1px) solid var(--ui-border, #c8c8c2);
+  border-radius: var(--ui-radius, 6px);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast, 150ms) ease,
+    box-shadow   var(--duration-fast, 150ms) ease;
+
+  &:hover { border-color: var(--ui-primary, #1a1a18); }
+  &:focus-visible { outline: none; }
+}
+
+/* Focus ring on either trigger type */
+.trigger-btn:focus-visible,
+.trigger-wrapper:focus-within {
+  border-color: var(--ui-primary, #1a1a18);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-focus-ring, #6366f1) 22%, transparent);
+}
+
+/* ── Button trigger value ────────────────────────────────── */
+.trigger-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: start;
+}
+
+.trigger-value.is-placeholder {
+  color: var(--ui-text-muted, #a3a39c);
+}
+
+/* ── Searchable trigger ──────────────────────────────────── */
+.trigger-input {
+  all: unset;
+  flex: 1;
+  min-width: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--ui-text, #1a1a18);
+  caret-color: var(--ui-primary, #1a1a18);
+
+  &::placeholder { color: var(--ui-text-muted, #a3a39c); }
+}
+
+.search-icon {
+  flex-shrink: 0;
+  color: var(--ui-text-muted, #a3a39c);
+}
+
+/* ── Chevron ─────────────────────────────────────────────── */
+.chevron {
+  flex-shrink: 0;
+  color: var(--ui-text-muted, #a3a39c);
+  margin-inline-start: auto;
+  transition: transform var(--duration-fast, 150ms) var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+:host([open]) .chevron {
+  transform: rotate(180deg);
+}
+
+/* ── Panel ───────────────────────────────────────────────── */
+.panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 100%;
+  z-index: var(--z-dropdown, 50);
+  padding: 4px;
+  background: var(--ui-surface-raised, #f4f4f0);
+  border: var(--ui-border-width, 1px) solid var(--ui-border, #c8c8c2);
+  border-radius: var(--ui-radius, 6px);
+  box-shadow: var(--ui-shadow, 0 4px 12px rgba(0,0,0,0.1));
+  max-height: min(18rem, 60vh);
+  overflow-y: auto;
+  /* Hidden */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-6px) scale(0.98);
+  transform-origin: top center;
+  transition:
+    opacity    140ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    transform  140ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    visibility 0s    linear 140ms;
+}
+
+.panel.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity    140ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    transform  140ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    visibility 0s    linear 0ms;
+}
+
+/* ── Options ─────────────────────────────────────────────── */
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  border-radius: var(--ui-radius-sm);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: var(--_fs);
+  font-weight: var(--weight-medium, 500);
+  color: var(--ui-text, #1a1a18);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background-color var(--duration-instant, 80ms) ease;
+}
+
+.option.is-highlighted,
+.option:hover {
+  background: var(--ui-surface-overlay);
+}
+
+.option.is-selected {
+  font-weight: var(--weight-semibold, 600);
+}
+
+.option.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.option-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.check {
+  flex-shrink: 0;
+  color: var(--ui-primary, #1a1a18);
+}
+
+.empty {
+  padding: var(--space-3, 0.75rem);
+  text-align: center;
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--ui-text-muted, #a3a39c);
+}
+
+/* ── Brutal theme ────────────────────────────────────────── */
+:host-context([data-theme="brutal"]) .trigger-btn,
+:host-context([data-theme="brutal"]) .trigger-wrapper {
+  border-radius: 0;
+  border-width: 2px;
+}
+
+:host-context([data-theme="brutal"]) .panel {
+  border-radius: 0;
+  border-width: 2px;
+}
+
+:host-context([data-theme="brutal"]) .option {
+  border-radius: 0;
+}
+
+/* ── Glass theme ─────────────────────────────────────────── */
+:host-context([data-theme="glass"]) .panel {
+  backdrop-filter: var(--ui-backdrop, none);
+  -webkit-backdrop-filter: var(--ui-backdrop, none);
+}
+
+/* ── Reduced motion ───────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    transition: opacity 100ms ease, visibility 0s linear 100ms;
+    transform: none !important;
+  }
+
+  .panel.is-open {
+    transition: opacity 100ms ease, visibility 0s linear 0ms;
+  }
+}
+
+/* ── Forced colors ────────────────────────────────────────── */
+@media (forced-colors: active) {
+  .trigger-btn,
+  .trigger-wrapper {
+    border: 2px solid ButtonText;
+  }
+
+  .panel {
+    border: 2px solid ButtonText;
+    background: Canvas;
+  }
+
+  .option.is-highlighted,
+  .option:hover {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+}

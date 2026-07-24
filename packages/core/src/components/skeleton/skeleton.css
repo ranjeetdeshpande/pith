@@ -1,0 +1,83 @@
+/* ═══════════════════════════════════════════════════════════
+   pith-skeleton — Shadow DOM styles
+   ═══════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+  line-height: 1;
+}
+
+/* ── Base bone ──────────────────────────────────────────── */
+.bone {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  background: var(--ui-surface-sunken, #e8e8e3);
+  border-radius: var(--ui-radius, 6px);
+}
+
+/* ── Shimmer sweep ──────────────────────────────────────── */
+.bone::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--ui-surface, #fafaf8) 55%, transparent) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* ── Variants ─────────────────────────────────────────────── */
+.bone.text {
+  width: 100%;
+  height: 0.8em;
+  border-radius: var(--ui-radius-sm, 3px);
+  margin-block-end: 0.5em;
+}
+
+.bone.text:last-child {
+  margin-block-end: 0;
+}
+
+.bone.rect {
+  width: 100%;
+  height: 3rem;
+}
+
+.bone.circle {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--ui-radius-full, 9999px);
+}
+
+/* ── Animation ────────────────────────────────────────────── */
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(200%); }
+}
+
+/* ── Reduced motion ───────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .bone::after {
+    animation: none;
+    background: color-mix(in srgb, var(--ui-surface, #fafaf8) 40%, transparent);
+    transform: none;
+  }
+}
+
+/* ── Forced colors ────────────────────────────────────────── */
+@media (forced-colors: active) {
+  .bone {
+    forced-color-adjust: none;
+    background: ButtonFace;
+    border: 1px solid ButtonText;
+  }
+
+  .bone::after {
+    display: none;
+  }
+}

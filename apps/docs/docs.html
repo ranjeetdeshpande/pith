@@ -1,0 +1,2607 @@
+<!doctype html>
+<html lang="en" data-theme="ink">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pith — Component Library</title>
+    <meta name="description" content="Pith — accessible Web Components with three visual personalities (Ink, Glass, Brutal). Framework-agnostic, container-query-driven, ~20kb. Works in React, Vue, Svelte, Angular, or plain HTML." />
+    <meta name="theme-color" content="#1a1a18" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Pith" />
+    <meta property="og:title" content="Pith — Web Components with character" />
+    <meta property="og:description" content="Accessible Web Components with three swappable themes. One API, zero framework lock-in, ~20kb." />
+    <meta property="og:image" content="/og-image.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Pith — Web Components with character" />
+    <meta name="twitter:description" content="Accessible Web Components with three swappable themes. One API, zero framework lock-in, ~20kb." />
+    <meta name="twitter:image" content="/og-image.svg" />
+    <style>
+      /* ── Page shell — uses the same --ui-* tokens as components ── */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --page-transition: background-color 300ms ease, color 300ms ease;
+      }
+
+      html {
+        font-family: var(--font-sans, system-ui, sans-serif);
+        background-color: var(--ui-surface, #fafaf8);
+        color: var(--ui-text, #1a1a18);
+        transition: var(--page-transition);
+        height: 100%;
+        overflow: hidden; /* prevent document-root scroll — .content is the sole scroll container */
+      }
+
+      /* Glass: light mode — soft lavender tinted bg */
+      html[data-theme="glass"] {
+        background-color: #f0f0f8;
+        background-image:
+          radial-gradient(ellipse 700px 500px at 15% 25%, rgba(99, 102, 241, 0.14) 0%, transparent 60%),
+          radial-gradient(ellipse 600px 400px at 85% 65%, rgba(236,  72, 153, 0.10) 0%, transparent 60%),
+          radial-gradient(ellipse 500px 400px at 52% 90%, rgba( 34, 197,  94, 0.09) 0%, transparent 60%),
+          radial-gradient(ellipse 400px 300px at 88%  8%, rgba(251, 191,  36, 0.10) 0%, transparent 60%),
+          repeating-linear-gradient(
+            45deg,
+            transparent 0px, transparent 39px,
+            rgba(0, 0, 0, 0.015) 39px, rgba(0, 0, 0, 0.015) 40px
+          );
+        background-attachment: fixed;
+      }
+
+      /* Glass: dark mode — deep dark with vivid blobs */
+      html[data-theme="glass"][data-dark] {
+        background-color: #0d0d14;
+        background-image:
+          radial-gradient(ellipse 700px 500px at 15% 25%, rgba(99, 102, 241, 0.35) 0%, transparent 60%),
+          radial-gradient(ellipse 600px 400px at 85% 65%, rgba(236,  72, 153, 0.28) 0%, transparent 60%),
+          radial-gradient(ellipse 500px 400px at 52% 90%, rgba( 34, 197,  94, 0.22) 0%, transparent 60%),
+          radial-gradient(ellipse 400px 300px at 88%  8%, rgba(251, 191,  36, 0.22) 0%, transparent 60%),
+          repeating-linear-gradient(
+            45deg,
+            transparent 0px, transparent 39px,
+            rgba(255, 255, 255, 0.025) 39px, rgba(255, 255, 255, 0.025) 40px
+          );
+        background-attachment: fixed;
+      }
+
+      body {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* ── App shell ───────────────────────────────────────── */
+      .shell {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .nav-rail {
+        height: 100%;
+        flex-shrink: 0;
+      }
+
+      .content {
+        flex: 1;
+        min-width: 0;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+        scroll-padding-top: 3.5rem;
+      }
+
+      .content-topbar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        height: 3.5rem;
+        padding: 0 2.5rem;
+        background: var(--ui-surface);
+        border-bottom: var(--ui-border-width, 1px) solid var(--ui-border);
+        transition: background 300ms ease, border-color 300ms ease;
+      }
+
+      html[data-theme="glass"] .content-topbar {
+        backdrop-filter: var(--ui-backdrop);
+        -webkit-backdrop-filter: var(--ui-backdrop);
+        background: transparent;
+      }
+
+      .content-body {
+        padding: 2.5rem 2.5rem 6rem;
+        max-width: 820px;
+      }
+
+      /* ── Docs nav toggle: swap icon based on collapsed state ── */
+      /* Expand icon hidden when sidebar is open */
+      #docs-nav:not([collapsed]) .icon-expand { display: none; }
+      /* Collapse icon hidden when sidebar is collapsed */
+      #docs-nav[collapsed] .icon-collapse     { display: none; }
+
+      .wordmark {
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        color: var(--ui-text);
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: color 300ms ease;
+      }
+
+      .wordmark span {
+        color: var(--ui-text-muted);
+        font-weight: 400;
+        font-size: 0.875rem;
+        letter-spacing: 0;
+        margin-left: 0.5rem;
+      }
+
+      /* ── Demo sections ──────────────────────────────────── */
+      .section {
+        margin-bottom: 3rem;
+      }
+
+      .section-label {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ui-text-subtle);
+        margin-bottom: 1rem;
+        transition: color 300ms ease;
+      }
+
+      .section-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--ui-text);
+        margin-bottom: 0.25rem;
+        transition: color 300ms ease;
+      }
+
+      .section-desc {
+        font-size: 0.875rem;
+        color: var(--ui-text-muted);
+        margin-bottom: 1.25rem;
+        line-height: 1.6;
+        transition: color 300ms ease;
+      }
+
+      /* Typography demo helpers */
+      .typo-label {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ui-text-subtle);
+        margin: 0 0 0.75rem;
+        transition: color 300ms ease;
+      }
+      .typo-tag {
+        display: inline-block;
+        font-family: var(--font-mono, monospace);
+        font-size: 0.6875rem;
+        font-weight: 600;
+        color: var(--ui-text-subtle);
+        background: var(--ui-surface-overlay);
+        border: 1px solid var(--ui-border);
+        border-radius: var(--ui-radius-xs, 2px);
+        padding: 0.1em 0.4em;
+        margin-bottom: 0.375rem;
+        vertical-align: middle;
+        transition: background-color 300ms ease, color 300ms ease;
+      }
+
+      /* Card wrapping the demo surface */
+      .demo-card {
+        background: var(--ui-surface-raised);
+        border: var(--ui-border-width, 1px) solid var(--ui-border);
+        border-radius: var(--ui-radius-lg);
+        padding: 1.75rem;
+        transition:
+          background 300ms ease,
+          border-color 300ms ease,
+          border-radius 300ms ease,
+          box-shadow 300ms ease;
+      }
+
+      html[data-theme="brutal"] .demo-card {
+        box-shadow: var(--ui-shadow);
+      }
+
+      html[data-theme="glass"] .demo-card {
+        backdrop-filter: var(--ui-backdrop);
+        -webkit-backdrop-filter: var(--ui-backdrop);
+      }
+
+      .demo-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .demo-row + .demo-row {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: var(--ui-border-width, 1px) solid var(--ui-border);
+      }
+
+      /* ── Copy-paste code panel (auto-generated per demo) ── */
+      .code-panel {
+        margin-top: 0.75rem;
+        border: var(--ui-border-width, 1px) solid var(--ui-border);
+        border-radius: var(--ui-radius, 8px);
+        background: var(--ui-surface-sunken);
+        overflow: hidden;
+      }
+      .code-panel > summary {
+        list-style: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.55rem 0.9rem;
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-xs, 0.75rem);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ui-text-muted);
+        user-select: none;
+      }
+      .code-panel > summary::-webkit-details-marker { display: none; }
+      .code-panel > summary::before {
+        content: "› Code";
+        transition: transform 150ms ease;
+      }
+      .code-panel[open] > summary::before {
+        content: "⌄ Code";
+      }
+      .code-copy {
+        all: unset;
+        cursor: pointer;
+        font: inherit;
+        padding: 0.2rem 0.6rem;
+        border-radius: var(--ui-radius-sm, 4px);
+        border: var(--ui-border-width, 1px) solid var(--ui-border);
+        color: var(--ui-text);
+        transition: background 150ms ease, color 150ms ease;
+      }
+      .code-copy:hover { background: var(--ui-surface-raised); }
+      .code-copy[data-copied] {
+        color: var(--ui-primary, currentColor);
+        border-color: var(--ui-primary, currentColor);
+      }
+      .code-panel pre {
+        margin: 0;
+        padding: 0.9rem 1rem;
+        border-top: var(--ui-border-width, 1px) solid var(--ui-border);
+        overflow-x: auto;
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-xs, 0.75rem);
+        line-height: 1.7;
+        color: var(--ui-text);
+      }
+      .code-panel pre code { all: unset; white-space: pre; }
+
+      /* ── Playground ─────────────────────────────────────── */
+      .pg-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      @container (min-width: 640px) {
+        .pg-grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+      }
+      .pg-stage {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 12rem;
+      }
+      .pg-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+        padding: 1.25rem;
+        border: var(--ui-border-width, 1px) solid var(--ui-border);
+        border-radius: var(--ui-radius-lg, 12px);
+        background: var(--ui-surface-sunken);
+      }
+      .pg-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+      .pg-field-row {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .pg-field-label {
+        font-size: var(--text-xs, 0.75rem);
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        color: var(--ui-text-muted);
+        font-family: var(--font-mono, monospace);
+      }
+
+      /* ── Container query demo ───────────────────────────── */
+      .cq-demo {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .cq-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .cq-slot {
+        border: 1px dashed var(--ui-border);
+        border-radius: var(--ui-radius);
+        padding: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        /* Container query context — .btn inside shadow DOM queries this */
+        container-type: inline-size;
+        container-name: pith-btn;
+      }
+
+      .cq-label {
+        font-size: 0.6875rem;
+        color: var(--ui-text-subtle);
+        white-space: nowrap;
+        min-width: 4rem;
+      }
+
+      .cq-slot pith-button {
+        width: 100%;
+        display: block;
+      }
+
+      /* ── Divider ────────────────────────────────────────── */
+      hr {
+        border: none;
+        border-top: 1px solid var(--ui-border);
+        margin: 3rem 0;
+        transition: border-color 300ms ease;
+      }
+
+      /* ── Footer ─────────────────────────────────────────── */
+      footer {
+        margin-top: 5rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--ui-border);
+        font-size: 0.8125rem;
+        color: var(--ui-text-subtle);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        transition: color 300ms ease, border-color 300ms ease;
+      }
+
+      code {
+        font-family: var(--font-mono, monospace);
+        font-size: 0.8125em;
+        background: var(--ui-surface-overlay);
+        padding: 0.15em 0.4em;
+        border-radius: var(--ui-radius-sm);
+        color: var(--ui-text-muted);
+        transition: background 300ms ease;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html, .demo-card, .section-label,
+        .section-title, .section-desc, footer, hr, code,
+        .content-topbar {
+          transition: none;
+        }
+      }
+
+      /* ── Topbar sub-elements ───────────────────────────────── */
+      .topbar-start {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-shrink: 0;
+      }
+
+      .topbar-end {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-shrink: 0;
+      }
+
+      .fontsize-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        font-size: var(--text-xs, 0.75rem);
+        color: var(--ui-text-subtle);
+        white-space: nowrap;
+      }
+
+      .fontsize-sep {
+        width: 1px;
+        height: 1.25rem;
+        background: var(--ui-border);
+        flex-shrink: 0;
+        transition: background-color 300ms ease;
+      }
+
+      /* Hamburger — hidden on desktop */
+      .topbar-menu-btn {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--ui-text);
+        padding: 0.375rem;
+        border-radius: var(--ui-radius-sm);
+        flex-shrink: 0;
+        transition: background-color 150ms ease, color 150ms ease;
+      }
+      .topbar-menu-btn:hover  { background: var(--ui-surface-overlay); }
+      .topbar-menu-btn:focus-visible {
+        outline: 2px solid var(--ui-focus-ring);
+        outline-offset: 2px;
+      }
+
+      /* ── Mobile / small screen ─────────────────────────────── */
+      @media (max-width: 767px) {
+        /* Show hamburger, hide font-size controls */
+        .topbar-menu-btn          { display: flex; }
+        .fontsize-controls,
+        .fontsize-sep             { display: none; }
+
+        /* Let topbar grow taller rather than overflow horizontally */
+        .content-topbar {
+          height: auto;
+          min-height: 3.5rem;
+          padding: 0.625rem 1rem;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+        }
+
+        /* "component library" subtext is noise on small screens */
+        .wordmark span { display: none; }
+
+        /* Tighter body padding */
+        .content-body { padding: 1.5rem 1.25rem 4rem; }
+      }
+
+      /* On very small phones, sidebar covers content as an overlay */
+      @media (max-width: 479px) {
+        /* Collapsed: hide completely */
+        #docs-nav[collapsed] {
+          --pith-sidebar-collapsed-width: 0px;
+          overflow: hidden;
+        }
+        /* Expanded: fixed overlay so it doesn't shrink the content */
+        #docs-nav:not([collapsed]) {
+          position: fixed;
+          top: 0; left: 0; bottom: 0;
+          z-index: 200;
+          /* Subtle shadow so it lifts over content */
+          filter: drop-shadow(4px 0 24px rgba(0,0,0,0.18));
+        }
+      }
+    </style>
+  </head>
+  <body>
+
+    <pith-toaster></pith-toaster>
+
+    <!-- ── App shell ──────────────────────────────────────────── -->
+    <div class="shell">
+
+      <!-- ── Sidebar navigation ─────────────────────────────── -->
+      <aside class="nav-rail">
+        <pith-sidebar id="docs-nav" label="Pith UI components">
+
+          <!-- Brand (no toggle here — it would be clipped when collapsed) -->
+          <div slot="header" style="display:flex; align-items:center; gap:0.5rem; height:3.5rem; padding:0 0.75rem; border-bottom:var(--ui-border-width,1px) solid var(--ui-border); overflow:hidden; flex-shrink:0;">
+            <span style="flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; width:1.75rem; height:1.75rem; border-radius:var(--ui-radius-sm); background:var(--ui-primary); color:var(--ui-primary-fg);">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><polygon points="6,1 11,11 1,11"/></svg>
+            </span>
+            <span style="font-size:0.9375rem; font-weight:700; letter-spacing:-0.03em; color:var(--ui-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:color 300ms ease;">pith</span>
+          </div>
+
+          <!-- Explore -->
+          <pith-sidebar-section label="Explore">
+            <pith-sidebar-item href="#playground" data-section="playground">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 14.5 5 8 8.5 1.5 5 8 1.5z"/><path d="M1.5 11 8 14.5 14.5 11"/><path d="M1.5 8 8 11.5 14.5 8"/></svg>
+              Playground
+            </pith-sidebar-item>
+          </pith-sidebar-section>
+
+          <!-- Primitives -->
+          <pith-sidebar-section label="Primitives">
+            <pith-sidebar-item href="#button" data-section="button">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1.5" y="4.5" width="13" height="7" rx="2"/></svg>
+              Button
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#badge" data-section="badge">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M6 8h4"/></svg>
+              Badge
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#avatar" data-section="avatar">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="6" r="3"/><path d="M2 15c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/></svg>
+              Avatar
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#card" data-section="card">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="2" width="14" height="12" rx="2"/><line x1="1" y1="6.5" x2="15" y2="6.5"/></svg>
+              Card
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#switch" data-section="switch">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="5" width="14" height="6" rx="3"/><circle cx="10.5" cy="8" r="2" fill="currentColor" stroke="none"/></svg>
+              Switch
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#tabs" data-section="tabs">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="4" width="14" height="10" rx="1.5"/><path d="M1 7h5M7 4v3"/></svg>
+              Tabs
+            </pith-sidebar-item>
+          </pith-sidebar-section>
+
+          <!-- Overlays -->
+          <pith-sidebar-section label="Overlays">
+            <pith-sidebar-item href="#tooltip" data-section="tooltip">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.5v3.5"/><circle cx="8" cy="5.5" r="0.5" fill="currentColor" stroke="none"/></svg>
+              Tooltip
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#toast" data-section="toast">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2a4 4 0 0 1 4 4v3l1.5 2H2.5L4 9V6a4 4 0 0 1 4-4z"/><path d="M6.5 11a1.5 1.5 0 0 0 3 0"/></svg>
+              Toast
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#dropdown" data-section="dropdown">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="2" y1="4.5" x2="9" y2="4.5"/><line x1="2" y1="8" x2="9" y2="8"/><line x1="2" y1="11.5" x2="9" y2="11.5"/><polyline points="11,6.5 13.5,8 11,9.5"/></svg>
+              Dropdown
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#modal" data-section="modal">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="2" width="14" height="12" rx="2"/><line x1="1" y1="6" x2="15" y2="6"/></svg>
+              Modal
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#drawer" data-section="drawer">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="1" width="14" height="14" rx="2"/><line x1="10" y1="1" x2="10" y2="15"/><polyline points="13,5.5 15,7 13,8.5"/></svg>
+              Drawer
+            </pith-sidebar-item>
+          </pith-sidebar-section>
+
+          <!-- Motion -->
+          <pith-sidebar-section label="Motion">
+            <pith-sidebar-item href="#counter" data-section="counter">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><line x1="5" y1="2" x2="5" y2="14"/><line x1="11" y1="2" x2="11" y2="14"/><line x1="2" y1="5.5" x2="14" y2="5.5"/><line x1="2" y1="10.5" x2="14" y2="10.5"/></svg>
+              Counter
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#magnetic" data-section="magnetic">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M4 1v7a4 4 0 0 0 8 0V1"/><line x1="4" y1="1" x2="6.5" y2="1"/><line x1="9.5" y1="1" x2="12" y2="1"/></svg>
+              Magnetic
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#typewriter" data-section="typewriter">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="2" width="14" height="9" rx="1.5"/><line x1="1" y1="14" x2="15" y2="14"/><line x1="5.5" y1="5" x2="5.5" y2="7"/></svg>
+              Typewriter
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#spinner" data-section="spinner">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="8,2 14,13 2,13"/></svg>
+              Spinner
+            </pith-sidebar-item>
+          </pith-sidebar-section>
+
+          <!-- Structural -->
+          <pith-sidebar-section label="Structural">
+            <pith-sidebar-item href="#accordion" data-section="accordion">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><line x1="2" y1="4" x2="14" y2="4"/><line x1="2" y1="8.5" x2="14" y2="8.5"/><line x1="2" y1="13" x2="14" y2="13"/></svg>
+              Accordion
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#breadcrumb" data-section="breadcrumb">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3,4 6,8 3,12"/><polyline points="9,4 12,8 9,12"/></svg>
+              Breadcrumb
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#sidebar" data-section="sidebar">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="1" width="14" height="14" rx="2"/><line x1="5.5" y1="1" x2="5.5" y2="15"/></svg>
+              Sidebar
+            </pith-sidebar-item>
+          </pith-sidebar-section>
+
+          <!-- Forms -->
+          <pith-sidebar-section label="Forms">
+            <pith-sidebar-item href="#input" data-section="input">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="4" width="14" height="8" rx="1.5"/><line x1="4" y1="8" x2="4.01" y2="8" stroke-width="2"/></svg>
+              Input
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#slider" data-section="slider">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><line x1="1" y1="8" x2="15" y2="8"/><circle cx="6" cy="8" r="2.25" fill="currentColor" stroke="none"/></svg>
+              Slider
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#option-card" data-section="option-card">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="2" width="14" height="12" rx="2"/><polyline points="5,8 7,10 11,6"/></svg>
+              Option Card
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#checkbox" data-section="checkbox">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="2"/><polyline points="5,8 7,10.5 11,5.5"/></svg>
+              Checkbox
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#select" data-section="select">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="4" width="14" height="8" rx="2"/><polyline points="10,7 12,9 14,7"/></svg>
+              Select
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#file-upload" data-section="file-upload">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2H4a1.5 1.5 0 0 0-1.5 1.5v9A1.5 1.5 0 0 0 4 14h8a1.5 1.5 0 0 0 1.5-1.5V6L10 2z"/><polyline points="10,2 10,6 13.5,6"/><line x1="8" y1="9" x2="8" y2="12.5"/><polyline points="6,10.5 8,9 10,10.5"/></svg>
+              File Upload
+            </pith-sidebar-item>
+          </pith-sidebar-section>
+
+          <!-- Feedback -->
+          <pith-sidebar-section label="Feedback">
+            <pith-sidebar-item href="#skeleton" data-section="skeleton">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="14" height="3" rx="1.5"/><rect x="1" y="8" width="10" height="3" rx="1.5"/><rect x="1" y="13" width="7" height="2" rx="1"/></svg>
+              Skeleton
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#alert" data-section="alert">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><line x1="8" y1="5" x2="8" y2="8.5"/><circle cx="8" cy="11" r="0.75" fill="currentColor" stroke="none"/></svg>
+              Alert
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#progress" data-section="progress">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="6.5" width="14" height="3" rx="1.5"/><rect x="1" y="6.5" width="8" height="3" rx="1.5" fill="currentColor" stroke="none"/></svg>
+              Progress
+            </pith-sidebar-item>
+            <pith-sidebar-item href="#command" data-section="command">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="14" height="10" rx="2"/><line x1="4" y1="7" x2="12" y2="7"/><line x1="4" y1="10" x2="8" y2="10"/></svg>
+              Command
+            </pith-sidebar-item>
+          </pith-sidebar-section>
+
+          <!-- Typography -->
+          <pith-sidebar-section label="Typography">
+            <pith-sidebar-item href="#typography" data-section="typography">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h12M8 4v9M5 13h6"/></svg>
+              Type Scale
+            </pith-sidebar-item>
+          </pith-sidebar-section>
+
+          <!-- Install -->
+          <pith-sidebar-section>
+            <pith-sidebar-item href="#install" data-section="install">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1v9M5 8l3 3 3-3"/><rect x="1" y="11.5" width="14" height="3.5" rx="1.5"/></svg>
+              Install
+            </pith-sidebar-item>
+          </pith-sidebar-section>
+
+          <!-- Toggle footer — always visible; label hides automatically when collapsed -->
+          <div slot="footer" style="border-top:var(--ui-border-width,1px) solid var(--ui-border); padding:0.375rem 0.5rem;">
+            <pith-sidebar-item
+              onclick="document.getElementById('docs-nav').toggleAttribute('collapsed')"
+              aria-label="Toggle navigation rail">
+              <!-- Collapse icon (shown when expanded) -->
+              <svg class="icon-collapse" slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="1" y="1" width="14" height="14" rx="2"/>
+                <line x1="5.5" y1="1" x2="5.5" y2="15"/>
+                <polyline points="3.5,6.5 1.5,8 3.5,9.5"/>
+              </svg>
+              <!-- Expand icon (shown when collapsed) -->
+              <svg class="icon-expand" slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="1" y="1" width="14" height="14" rx="2"/>
+                <line x1="5.5" y1="1" x2="5.5" y2="15"/>
+                <polyline points="7.5,6.5 9.5,8 7.5,9.5"/>
+              </svg>
+              Collapse
+            </pith-sidebar-item>
+          </div>
+
+        </pith-sidebar>
+      </aside><!-- /.nav-rail -->
+
+      <!-- ── Main content ────────────────────────────────────── -->
+      <main class="content" id="main-content">
+
+        <!-- Sticky topbar: wordmark + theme switcher + dark toggle -->
+        <div class="content-topbar">
+
+          <div class="topbar-start">
+            <!-- Hamburger: visible on mobile only, toggles sidebar -->
+            <button id="mobile-menu-btn" class="topbar-menu-btn" aria-label="Toggle navigation" aria-controls="docs-nav">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true">
+                <line x1="2" y1="4.5"  x2="16" y2="4.5"/>
+                <line x1="2" y1="9"    x2="16" y2="9"/>
+                <line x1="2" y1="13.5" x2="16" y2="13.5"/>
+              </svg>
+            </button>
+            <div class="wordmark">pith <span>component library</span></div>
+          </div>
+
+          <div class="topbar-end">
+            <div class="fontsize-controls" title="Base font size">
+              <span style="font-size:0.625rem;font-weight:700;line-height:1;letter-spacing:-0.02em" aria-hidden="true">A</span>
+              <pith-slider id="fontsize-slider" min="12" max="22" value="16" step="1" show-buttons style="width:8rem"></pith-slider>
+              <span style="font-size:1rem;font-weight:700;line-height:1;letter-spacing:-0.02em" aria-hidden="true">A</span>
+              <span id="fontsize-label" style="min-width:2.25rem;font-variant-numeric:tabular-nums;color:var(--ui-text-muted)">16px</span>
+            </div>
+            <span class="fontsize-sep" aria-hidden="true"></span>
+            <pith-tabs id="theme-switcher" value="ink" variant="pills" label="Theme">
+              <pith-tab slot="tabs" value="ink">Ink</pith-tab>
+              <pith-tab slot="tabs" value="glass">Glass</pith-tab>
+              <pith-tab slot="tabs" value="brutal">Brutal</pith-tab>
+            </pith-tabs>
+            <pith-switch id="dark-toggle" size="sm">Dark</pith-switch>
+          </div>
+
+        </div><!-- /.content-topbar -->
+
+        <!-- Scrollable content body -->
+        <div class="content-body">
+
+    <!-- ── Interactive Playground ──────────────────────────── -->
+    <section id="playground" class="section">
+      <p class="section-label">interactive</p>
+      <h2 class="section-title">Playground</h2>
+      <p class="section-desc">Pick a component, flip its props, and copy the exact markup. Renders live in the active theme.</p>
+
+      <pith-tabs id="pg-component" value="button" variant="pills" label="Component" style="margin-bottom:1rem">
+        <pith-tab slot="tabs" value="button">Button</pith-tab>
+        <pith-tab slot="tabs" value="badge">Badge</pith-tab>
+        <pith-tab slot="tabs" value="card">Card</pith-tab>
+        <pith-tab slot="tabs" value="input">Input</pith-tab>
+      </pith-tabs>
+
+      <div class="pg-grid">
+        <div class="pg-stage demo-card" data-no-code id="pg-stage"></div>
+        <div class="pg-controls" id="pg-controls"></div>
+      </div>
+
+      <details class="code-panel" id="pg-code-panel" open>
+        <summary><button class="code-copy" type="button" id="pg-copy">Copy</button></summary>
+        <pre><code id="pg-code"></code></pre>
+      </details>
+    </section>
+
+    <!-- ── Button: Variants ────────────────────────────────── -->
+    <section id="button" class="section">
+      <p class="section-label">pith-button</p>
+      <h2 class="section-title">Variants</h2>
+      <p class="section-desc">Four semantic variants. Each adapts its colour from the active theme tokens.</p>
+      <div class="demo-card">
+        <div class="demo-row">
+          <pith-button variant="primary">Primary</pith-button>
+          <pith-button variant="secondary">Secondary</pith-button>
+          <pith-button variant="ghost">Ghost</pith-button>
+          <pith-button variant="danger">Danger</pith-button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Button: Sizes ───────────────────────────────────── -->
+    <section id="button-sizes" class="section">
+      <h2 class="section-title">Sizes</h2>
+      <p class="section-desc">Three sizes. Font, padding, and gap scale consistently with the type scale.</p>
+      <div class="demo-card">
+        <div class="demo-row">
+          <pith-button size="sm">Small</pith-button>
+          <pith-button size="md">Medium</pith-button>
+          <pith-button size="lg">Large</pith-button>
+        </div>
+        <div class="demo-row">
+          <pith-button variant="secondary" size="sm">Small</pith-button>
+          <pith-button variant="secondary" size="md">Medium</pith-button>
+          <pith-button variant="secondary" size="lg">Large</pith-button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Button: States ──────────────────────────────────── -->
+    <section id="button-states" class="section">
+      <h2 class="section-title">States</h2>
+      <p class="section-desc">
+        <code>loading</code> triggers a spinner and sets <code>aria-busy="true"</code>.
+        Click the demo buttons to watch the transition.
+      </p>
+      <div class="demo-card">
+        <div class="demo-row">
+          <pith-button disabled>Disabled</pith-button>
+          <pith-button variant="secondary" disabled>Disabled</pith-button>
+          <pith-button variant="ghost"     disabled>Disabled</pith-button>
+        </div>
+        <div class="demo-row">
+          <pith-button demo-loading>Click to load</pith-button>
+          <pith-button variant="secondary" demo-loading>Click to load</pith-button>
+          <pith-button variant="ghost"     demo-loading>Click to load</pith-button>
+          <pith-button variant="danger"    demo-loading>Click to load</pith-button>
+        </div>
+        <!-- pith-spinner as icon-start in buttons -->
+        <div class="demo-row">
+          <pith-button variant="primary" disabled>
+            <pith-spinner slot="icon-start" size="xs" label="Saving"></pith-spinner>
+            Saving
+          </pith-button>
+          <pith-button variant="secondary" disabled>
+            <pith-spinner slot="icon-start" size="xs" label="Loading"></pith-spinner>
+            Loading
+          </pith-button>
+          <pith-button variant="ghost" disabled>
+            <pith-spinner slot="icon-start" size="xs" label="Processing"></pith-spinner>
+            Processing
+          </pith-button>
+          <pith-button variant="danger" disabled>
+            <pith-spinner slot="icon-start" size="xs" label="Deleting"></pith-spinner>
+            Deleting
+          </pith-button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Button: Icons ───────────────────────────────────── -->
+    <section id="button-icons" class="section">
+      <h2 class="section-title">Icon slots</h2>
+      <p class="section-desc">
+        <code>slot="icon-start"</code> and <code>slot="icon-end"</code>.
+        Padding automatically adjusts via <code>:has()</code> when icons are present.
+      </p>
+      <div class="demo-card">
+        <div class="demo-row">
+
+          <pith-button variant="primary">
+            <svg slot="icon-start" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M8 2v8m0-8L5 5m3-3 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 11v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Upload
+          </pith-button>
+
+          <pith-button variant="secondary">
+            <svg slot="icon-start" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Schedule
+          </pith-button>
+
+          <pith-button variant="ghost">
+            Settings
+            <svg slot="icon-end" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="8" cy="8" r="1.5" fill="currentColor"/>
+              <path d="M8 2.5A5.5 5.5 0 1 0 13.5 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M11 2l2.5 2.5L11 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </pith-button>
+
+          <pith-button variant="danger">
+            <svg slot="icon-start" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M6 2h4M2 4h12M5 4l.5 8h5l.5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Delete
+          </pith-button>
+
+        </div>
+
+        <!-- Icon-only buttons -->
+        <div class="demo-row">
+          <pith-button variant="secondary" title="Upload file" aria-label="Upload file">
+            <svg slot="icon-start" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M8 2v8m0-8L5 5m3-3 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 11v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </pith-button>
+
+          <pith-button variant="ghost" title="Settings" aria-label="Settings">
+            <svg slot="icon-start" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M8 2v1m0 10v1M2 8h1m10 0h1m-2.05-4.95-.7.7M5.75 10.25l-.7.7m0-6.65.7.7m4.5 4.5.7.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </pith-button>
+
+          <pith-button variant="danger" title="Delete" aria-label="Delete">
+            <svg slot="icon-start" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M6 2h4M2 4h12M5 4l.5 8h5l.5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </pith-button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Container query demo ─────────────────────────────── -->
+    <section id="button-cq" class="section">
+      <h2 class="section-title">Container queries</h2>
+      <p class="section-desc">
+        The button uses <code>@container</code> — it responds to its
+        <em>parent's</em> width, not the viewport. Resize the window or nest
+        in a narrow column and it adapts automatically.
+      </p>
+      <div class="demo-card">
+        <div class="cq-demo">
+
+          <!-- Label sits OUTSIDE the container so the container width
+               equals only the button's available space. -->
+          <div class="cq-row">
+            <span class="cq-label">unconstrained</span>
+            <div class="cq-slot" style="flex:1">
+              <pith-button>Save changes</pith-button>
+            </div>
+          </div>
+
+          <div class="cq-row">
+            <span class="cq-label">280 px — slim</span>
+            <div class="cq-slot" style="width:280px">
+              <pith-button>Save changes</pith-button>
+            </div>
+          </div>
+
+          <div class="cq-row">
+            <span class="cq-label">120 px — compact</span>
+            <div class="cq-slot" style="width:120px">
+              <pith-button>Save changes</pith-button>
+            </div>
+          </div>
+
+          <div class="cq-row">
+            <span class="cq-label">52 px — icon only</span>
+            <div class="cq-slot" style="width:52px">
+              <pith-button aria-label="Save changes">
+                <svg slot="icon-start" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M3 8l4 4 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Save changes
+              </pith-button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- ── Badge ───────────────────────────────────────────── -->
+    <section id="badge" class="section">
+      <p class="section-label">pith-badge</p>
+      <h2 class="section-title">Badge</h2>
+      <p class="section-desc">Status labels and tags. Dot mode, five variants, optional remove button.</p>
+      <div class="demo-card">
+        <div class="demo-row">
+          <pith-badge>Default</pith-badge>
+          <pith-badge variant="primary">Primary</pith-badge>
+          <pith-badge variant="success">Active</pith-badge>
+          <pith-badge variant="warning">Pending</pith-badge>
+          <pith-badge variant="danger">Error</pith-badge>
+        </div>
+        <div class="demo-row">
+          <pith-badge dot></pith-badge>
+          <pith-badge dot variant="primary"></pith-badge>
+          <pith-badge dot variant="success"></pith-badge>
+          <pith-badge dot variant="warning"></pith-badge>
+          <pith-badge dot variant="danger"></pith-badge>
+          <span style="font-size:0.8125rem;color:var(--ui-text-muted)">Status dots — default · primary · success · warning · danger</span>
+        </div>
+        <div class="demo-row">
+          <pith-badge removable>React</pith-badge>
+          <pith-badge removable variant="primary">TypeScript</pith-badge>
+          <pith-badge removable variant="success">Deployed</pith-badge>
+          <pith-badge removable variant="warning">Draft</pith-badge>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Avatar ───────────────────────────────────────────── -->
+    <section id="avatar" class="section">
+      <p class="section-label">pith-avatar</p>
+      <h2 class="section-title">Avatar</h2>
+      <p class="section-desc">Image with initials fallback. Size variants, online indicator, avatar group.</p>
+      <div class="demo-card">
+        <div class="demo-row" style="align-items:flex-end">
+          <pith-avatar name="Alice Brown" size="xs"></pith-avatar>
+          <pith-avatar name="Bob Smith" size="sm"></pith-avatar>
+          <pith-avatar name="Charlie Xu" size="md" online></pith-avatar>
+          <pith-avatar name="Diana Prince" size="lg"></pith-avatar>
+          <pith-avatar name="Evan Ross" size="xl" online></pith-avatar>
+        </div>
+        <div class="demo-row" style="margin-top:1rem">
+          <pith-avatar name="Square" size="md" square></pith-avatar>
+          <pith-avatar name="SW" size="md" square></pith-avatar>
+          <!-- Avatar group via negative margin -->
+          <div style="display:flex;margin-left:0.5rem">
+            <pith-avatar name="Alice Brown"   size="sm" style="z-index:3"></pith-avatar>
+            <pith-avatar name="Bob Smith"     size="sm" style="z-index:2;margin-left:-0.5rem"></pith-avatar>
+            <pith-avatar name="Charlie Xu"    size="sm" style="z-index:1;margin-left:-0.5rem"></pith-avatar>
+            <pith-avatar name="Diana Prince"  size="sm" style="z-index:0;margin-left:-0.5rem"></pith-avatar>
+          </div>
+          <span style="font-size:0.8125rem;color:var(--ui-text-muted)">Avatar group</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Card ─────────────────────────────────────────────── -->
+    <section id="card" class="section">
+      <p class="section-label">pith-card</p>
+      <h2 class="section-title">Card</h2>
+      <p class="section-desc">Surface container with optional header, footer, and hover lift. Glass theme adds blur automatically.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem">
+        <pith-card hoverable>
+          <div slot="header" style="font-weight:600;font-size:0.9375rem;color:var(--ui-text)">Getting Started</div>
+          <p style="font-size:0.875rem;color:var(--ui-text-muted);line-height:1.6;margin:0">Install via npm, add a theme attribute, start building.</p>
+          <div slot="footer" style="font-size:0.8125rem;color:var(--ui-text-subtle);display:flex;justify-content:space-between">
+            <span>3 min read</span>
+            <pith-badge variant="success">New</pith-badge>
+          </div>
+        </pith-card>
+        <pith-card hoverable>
+          <div slot="header" style="font-weight:600;font-size:0.9375rem;color:var(--ui-text)">Theming</div>
+          <p style="font-size:0.875rem;color:var(--ui-text-muted);line-height:1.6;margin:0">Swap between Ink, Glass, and Brutal by setting a single data attribute.</p>
+          <div slot="footer" style="font-size:0.8125rem;color:var(--ui-text-subtle)">
+            <span>5 min read</span>
+          </div>
+        </pith-card>
+        <pith-card hoverable>
+          <div slot="header" style="font-weight:600;font-size:0.9375rem;color:var(--ui-text)">A11y First</div>
+          <p style="font-size:0.875rem;color:var(--ui-text-muted);line-height:1.6;margin:0">ARIA markup drives state. CSS derives from attributes, never JavaScript classes.</p>
+          <div slot="footer" style="font-size:0.8125rem;color:var(--ui-text-subtle)">
+            <span>7 min read</span>
+          </div>
+        </pith-card>
+      </div>
+    </section>
+
+    <!-- ── Switch ───────────────────────────────────────────── -->
+    <section id="switch" class="section">
+      <p class="section-label">pith-switch</p>
+      <h2 class="section-title">Switch</h2>
+      <p class="section-desc">Binary toggle control. Renders as <code>button[role="switch"]</code> — keyboard and screen-reader accessible. Fires <code>pith-change</code> with <code>detail.checked</code> on toggle.</p>
+
+      <div style="margin-top:1.5rem">
+        <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0 0 0.75rem">Sizes</p>
+        <div style="display:flex;align-items:center;gap:2rem;flex-wrap:wrap">
+          <pith-switch size="sm">Small</pith-switch>
+          <pith-switch>Medium</pith-switch>
+          <pith-switch size="lg">Large</pith-switch>
+        </div>
+      </div>
+
+      <div style="margin-top:2rem">
+        <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0 0 0.75rem">States</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem 2rem;align-items:center">
+          <pith-switch>Notifications</pith-switch>
+          <pith-switch checked>Dark mode</pith-switch>
+          <pith-switch disabled>Disabled off</pith-switch>
+          <pith-switch checked disabled>Disabled on</pith-switch>
+        </div>
+      </div>
+
+      <div style="margin-top:2rem">
+        <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0 0 0.75rem">Without label</p>
+        <div style="display:flex;align-items:center;gap:1rem">
+          <pith-switch aria-label="Toggle A"></pith-switch>
+          <pith-switch checked aria-label="Toggle B"></pith-switch>
+          <pith-switch size="sm" aria-label="Toggle C"></pith-switch>
+          <pith-switch size="lg" aria-label="Toggle D"></pith-switch>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Tabs ────────────────────────────────────────────── -->
+    <section id="tabs" class="section">
+      <p class="section-label">pith-tabs · pith-tab · pith-tab-panel</p>
+      <h2 class="section-title">Tabs</h2>
+      <p class="section-desc">Accessible tab navigation. Arrow keys move between tabs. <code>pith-tab slot="tabs"</code> triggers pair with <code>pith-tab-panel</code> via matching <code>value</code> attributes. Two variants: <code>line</code> (default) and <code>pills</code>.</p>
+
+      <!-- Line variant -->
+      <div style="margin-top:1.5rem">
+        <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0 0 0.75rem">Line (default)</p>
+        <pith-tabs value="design">
+          <pith-tab slot="tabs" value="design">Design</pith-tab>
+          <pith-tab slot="tabs" value="code">Code</pith-tab>
+          <pith-tab slot="tabs" value="tokens">Tokens</pith-tab>
+          <pith-tab slot="tabs" value="api" disabled>API</pith-tab>
+
+          <pith-tab-panel value="design">
+            <p style="font-size:var(--text-sm,0.875rem);color:var(--ui-text-muted);line-height:1.65;margin:0">Pith ships three distinct visual personalities — <strong style="color:var(--ui-text)">Ink</strong>, <strong style="color:var(--ui-text)">Glass</strong>, and <strong style="color:var(--ui-text)">Brutal</strong>. Each theme is a coherent system: matching border weights, radii, shadows, and motion curves.</p>
+          </pith-tab-panel>
+          <pith-tab-panel value="code">
+            <pre style="font-family:var(--font-mono,monospace);font-size:var(--text-xs,0.75rem);color:var(--ui-text-muted);background:var(--ui-surface-sunken);padding:0.875rem 1rem;border-radius:var(--ui-radius-sm);overflow-x:auto;margin:0;line-height:1.6">&lt;pith-tabs value="design"&gt;
+  &lt;pith-tab slot="tabs" value="design"&gt;Design&lt;/pith-tab&gt;
+  &lt;pith-tab slot="tabs" value="code"&gt;Code&lt;/pith-tab&gt;
+  &lt;pith-tab-panel value="design"&gt;...&lt;/pith-tab-panel&gt;
+  &lt;pith-tab-panel value="code"&gt;...&lt;/pith-tab-panel&gt;
+&lt;/pith-tabs&gt;</pre>
+          </pith-tab-panel>
+          <pith-tab-panel value="tokens">
+            <p style="font-size:var(--text-sm,0.875rem);color:var(--ui-text-muted);line-height:1.65;margin:0">All visual values derive from <code style="font-family:var(--font-mono,monospace);font-size:0.8125rem">--ui-*</code> semantic tokens. Components never read <code style="font-family:var(--font-mono,monospace);font-size:0.8125rem">data-theme</code> directly — only the tokens change.</p>
+          </pith-tab-panel>
+          <pith-tab-panel value="api">
+            <p style="font-size:var(--text-sm,0.875rem);color:var(--ui-text-muted);margin:0">API documentation.</p>
+          </pith-tab-panel>
+        </pith-tabs>
+      </div>
+
+      <!-- Pills variant -->
+      <div style="margin-top:2.5rem">
+        <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0 0 0.75rem">Pills</p>
+        <pith-tabs value="month" variant="pills">
+          <pith-tab slot="tabs" value="day">Day</pith-tab>
+          <pith-tab slot="tabs" value="week">Week</pith-tab>
+          <pith-tab slot="tabs" value="month">Month</pith-tab>
+          <pith-tab slot="tabs" value="year">Year</pith-tab>
+
+          <pith-tab-panel value="day">
+            <p style="font-size:var(--text-sm,0.875rem);color:var(--ui-text-muted);margin:0">Daily view — 24 hour breakdown.</p>
+          </pith-tab-panel>
+          <pith-tab-panel value="week">
+            <p style="font-size:var(--text-sm,0.875rem);color:var(--ui-text-muted);margin:0">Weekly view — Mon–Sun summary.</p>
+          </pith-tab-panel>
+          <pith-tab-panel value="month">
+            <p style="font-size:var(--text-sm,0.875rem);color:var(--ui-text-muted);margin:0">Monthly view — calendar grid with activity.</p>
+          </pith-tab-panel>
+          <pith-tab-panel value="year">
+            <p style="font-size:var(--text-sm,0.875rem);color:var(--ui-text-muted);margin:0">Yearly view — 12-month heat map.</p>
+          </pith-tab-panel>
+        </pith-tabs>
+      </div>
+    </section>
+
+    <!-- ── Tooltip ──────────────────────────────────────────── -->
+    <section id="tooltip" class="section">
+      <p class="section-label">pith-tooltip</p>
+      <h2 class="section-title">Tooltip</h2>
+      <p class="section-desc">Pure-CSS show on hover and keyboard focus. Four placement options. Configurable delay.</p>
+      <div class="demo-card">
+        <div class="demo-row" style="justify-content:center;padding:2rem 0">
+          <pith-tooltip content="Appears above" placement="top">
+            <pith-button variant="secondary" size="sm">Top</pith-button>
+          </pith-tooltip>
+          <pith-tooltip content="Appears below" placement="bottom">
+            <pith-button variant="secondary" size="sm">Bottom</pith-button>
+          </pith-tooltip>
+          <pith-tooltip content="Appears to the left" placement="left">
+            <pith-button variant="secondary" size="sm">Left</pith-button>
+          </pith-tooltip>
+          <pith-tooltip content="Appears to the right" placement="right">
+            <pith-button variant="secondary" size="sm">Right</pith-button>
+          </pith-tooltip>
+          <pith-tooltip content="No delay" style="--pith-tooltip-delay:0ms">
+            <pith-button variant="ghost" size="sm">Instant</pith-button>
+          </pith-tooltip>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Toast ────────────────────────────────────────────── -->
+    <section id="toast" class="section">
+      <p class="section-label">pith-toaster</p>
+      <h2 class="section-title">Toast</h2>
+      <p class="section-desc">Auto-dismissing notifications with enter/exit animations and ARIA live region. Stacks in the corner.</p>
+      <div class="demo-card">
+        <div class="demo-row">
+          <pith-button data-toast="default" data-toast-message="Operation completed.">Default</pith-button>
+          <pith-button data-toast="success" data-toast-message="Changes saved successfully!" variant="secondary">Success</pith-button>
+          <pith-button data-toast="warning" data-toast-message="Your session expires in 5 minutes." variant="ghost">Warning</pith-button>
+          <pith-button data-toast="danger"  data-toast-message="Something went wrong. Please retry." variant="danger">Danger</pith-button>
+          <pith-button data-toast="info"    data-toast-message="A new version is available." variant="secondary">Info</pith-button>
+        </div>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- ── Dropdown ─────────────────────────────────────────── -->
+    <section id="dropdown" class="section">
+      <p class="section-label">pith-dropdown</p>
+      <h2 class="section-title">Dropdown</h2>
+      <p class="section-desc">Contextual menu anchored to any trigger. Keyboard-navigable with Arrow keys, Enter, and Escape.</p>
+      <div class="demo-card">
+        <div class="demo-row" style="flex-wrap:wrap;gap:1.5rem;align-items:flex-start">
+
+          <!-- Basic actions menu -->
+          <pith-dropdown>
+            <pith-button slot="trigger" variant="secondary">
+              Actions
+              <svg slot="icon-end" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </pith-button>
+            <pith-dropdown-item value="edit">
+              <svg slot="icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M9.5 1.5a1.5 1.5 0 0 1 2.121 2.121L4.5 10.742 1.5 12l1.258-3L9.5 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Edit
+            </pith-dropdown-item>
+            <pith-dropdown-item value="duplicate">
+              <svg slot="icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <rect x="1" y="3.5" width="8" height="9.5" rx="1" stroke="currentColor" stroke-width="1.3"/>
+                <path d="M4 3.5V2.5A1 1 0 0 1 5 1.5h7a1 1 0 0 1 1 1V10a1 1 0 0 1-1 1H12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              </svg>
+              Duplicate
+            </pith-dropdown-item>
+            <pith-dropdown-item value="share">
+              <svg slot="icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <circle cx="11.5" cy="2.5" r="1.5" stroke="currentColor" stroke-width="1.3"/>
+                <circle cx="11.5" cy="11.5" r="1.5" stroke="currentColor" stroke-width="1.3"/>
+                <circle cx="2.5" cy="7" r="1.5" stroke="currentColor" stroke-width="1.3"/>
+                <path d="M4 7l6-4.5M4 7l6 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              </svg>
+              Share
+            </pith-dropdown-item>
+            <pith-dropdown-item value="delete" variant="danger" divider>
+              <svg slot="icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M5 1.5h4M1.5 3.5h11M5.5 3.5l.5 7h2l.5-7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Delete
+            </pith-dropdown-item>
+          </pith-dropdown>
+
+          <!-- Icon-only trigger with end alignment -->
+          <pith-dropdown placement="bottom-end">
+            <pith-button slot="trigger" variant="ghost" aria-label="More options">
+              <svg slot="icon-start" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="8" cy="3" r="1.25" fill="currentColor"/>
+                <circle cx="8" cy="8" r="1.25" fill="currentColor"/>
+                <circle cx="8" cy="13" r="1.25" fill="currentColor"/>
+              </svg>
+            </pith-button>
+            <pith-dropdown-item value="rename">Rename</pith-dropdown-item>
+            <pith-dropdown-item value="move">Move to…</pith-dropdown-item>
+            <pith-dropdown-item value="export">Export as PDF</pith-dropdown-item>
+            <pith-dropdown-item value="archive" divider>Archive</pith-dropdown-item>
+            <pith-dropdown-item value="remove" variant="danger">Remove</pith-dropdown-item>
+          </pith-dropdown>
+
+          <!-- Disabled item demo -->
+          <pith-dropdown>
+            <pith-button slot="trigger" variant="ghost" size="sm">File</pith-button>
+            <pith-dropdown-item value="new">New file</pith-dropdown-item>
+            <pith-dropdown-item value="open">Open…</pith-dropdown-item>
+            <pith-dropdown-item value="save">Save</pith-dropdown-item>
+            <pith-dropdown-item value="save-as" disabled>Save as… <pith-badge variant="warning" style="margin-left:auto;font-size:0.65rem">Soon</pith-badge></pith-dropdown-item>
+            <pith-dropdown-item value="close" divider>Close</pith-dropdown-item>
+          </pith-dropdown>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Modal ─────────────────────────────────────────────── -->
+    <section id="modal" class="section">
+      <p class="section-label">pith-modal</p>
+      <h2 class="section-title">Modal</h2>
+      <p class="section-desc">Native <code>&lt;dialog&gt;</code> top layer. Browser focus trap, Escape key, backdrop click, entry/exit animations.</p>
+      <div class="demo-card">
+        <div class="demo-row" style="flex-wrap:wrap">
+
+          <pith-button variant="secondary" data-modal-target="modal-sm">Small</pith-button>
+          <pith-button variant="primary"   data-modal-target="modal-md">Confirm dialog</pith-button>
+          <pith-button variant="ghost"     data-modal-target="modal-lg">Large form</pith-button>
+          <pith-button variant="ghost"     data-modal-target="modal-noheader">No header</pith-button>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Modal instances (hidden until opened) ──────────── -->
+
+    <!-- Small: minimal confirm -->
+    <pith-modal id="modal-sm" size="sm">
+      <span slot="header">Delete file?</span>
+      <p style="margin:0;line-height:1.7">
+        <strong style="color:var(--ui-text)">notes-final-v3.md</strong> will be permanently removed. This action cannot be undone.
+      </p>
+      <div slot="footer">
+        <pith-button variant="ghost"  onclick="document.getElementById('modal-sm').open=false">Cancel</pith-button>
+        <pith-button variant="danger" onclick="document.getElementById('modal-sm').open=false">Delete</pith-button>
+      </div>
+    </pith-modal>
+
+    <!-- Medium: standard confirm with details -->
+    <pith-modal id="modal-md" size="md">
+      <span slot="header">Publish changes</span>
+      <p style="margin:0 0 1rem;line-height:1.7">
+        You're about to publish <strong style="color:var(--ui-text)">3 changes</strong> to production. Review the summary below before continuing.
+      </p>
+      <div style="background:var(--ui-surface-sunken);border:var(--ui-border-width,1px) solid var(--ui-border);border-radius:var(--ui-radius-sm);padding:0.875rem 1rem;font-size:0.8125rem;line-height:1.8;transition:background 300ms ease,border-color 300ms ease">
+        <div>+ Added <code style="color:var(--ui-text)">pith-modal</code> component</div>
+        <div>+ Added <code style="color:var(--ui-text)">pith-dropdown</code> component</div>
+        <div>~ Updated <code style="color:var(--ui-text)">themes.css</code> dark variants</div>
+      </div>
+      <div slot="footer">
+        <pith-button variant="ghost"   onclick="document.getElementById('modal-md').open=false">Cancel</pith-button>
+        <pith-button variant="primary" onclick="document.getElementById('modal-md').open=false">Publish</pith-button>
+      </div>
+    </pith-modal>
+
+    <!-- Large: form-style -->
+    <pith-modal id="modal-lg" size="lg">
+      <span slot="header">Create new project</span>
+      <form style="display:grid;gap:1.25rem" onsubmit="event.preventDefault();document.getElementById('modal-lg').open=false">
+        <div style="display:grid;gap:0.375rem">
+          <label style="font-size:0.8125rem;font-weight:600;color:var(--ui-text)">Project name</label>
+          <input type="text" placeholder="e.g. My awesome app"
+            style="all:unset;box-sizing:border-box;width:100%;padding:0.5625rem 0.75rem;background:var(--ui-surface-sunken);border:var(--ui-border-width,1px) solid var(--ui-border);border-radius:var(--ui-radius-sm);font-size:0.875rem;color:var(--ui-text);transition:border-color 150ms ease,background 300ms ease"
+          />
+        </div>
+        <div style="display:grid;gap:0.375rem">
+          <label style="font-size:0.8125rem;font-weight:600;color:var(--ui-text)">Description <span style="font-weight:400;color:var(--ui-text-muted)">(optional)</span></label>
+          <textarea rows="3" placeholder="Short description of what you're building"
+            style="all:unset;box-sizing:border-box;width:100%;padding:0.5625rem 0.75rem;background:var(--ui-surface-sunken);border:var(--ui-border-width,1px) solid var(--ui-border);border-radius:var(--ui-radius-sm);font-size:0.875rem;color:var(--ui-text);resize:vertical;min-height:5rem;transition:border-color 150ms ease,background 300ms ease"
+          ></textarea>
+        </div>
+        <div style="display:flex;gap:0.5rem">
+          <pith-badge variant="primary">Web app</pith-badge>
+          <pith-badge>API</pith-badge>
+          <pith-badge>CLI tool</pith-badge>
+        </div>
+      </form>
+      <div slot="footer">
+        <pith-button variant="ghost"   onclick="document.getElementById('modal-lg').open=false">Cancel</pith-button>
+        <pith-button variant="primary" onclick="document.getElementById('modal-lg').open=false">
+          <svg slot="icon-start" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          Create project
+        </pith-button>
+      </div>
+    </pith-modal>
+
+    <!-- No header -->
+    <pith-modal id="modal-noheader" size="sm">
+      <div style="text-align:center;padding:0.5rem 0 0.25rem">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="display:block;margin:0 auto 1rem" aria-hidden="true">
+          <circle cx="20" cy="20" r="18" fill="var(--ui-warning-subtle)" stroke="var(--ui-warning)" stroke-width="1.5"/>
+          <path d="M20 12v9M20 27v2" stroke="var(--ui-warning)" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <p style="margin:0 0 0.25rem;font-weight:600;font-size:1rem;color:var(--ui-text)">Session expiring</p>
+        <p style="margin:0 0 1.5rem;font-size:0.875rem;color:var(--ui-text-muted);line-height:1.6">You'll be automatically signed out in 5 minutes due to inactivity.</p>
+        <div style="display:flex;gap:0.5rem;justify-content:center">
+          <pith-button variant="ghost"   size="sm" onclick="document.getElementById('modal-noheader').open=false">Sign out now</pith-button>
+          <pith-button variant="primary" size="sm" onclick="document.getElementById('modal-noheader').open=false">Stay signed in</pith-button>
+        </div>
+      </div>
+    </pith-modal>
+
+    <!-- ══════════════════════════════════════════════════════
+         pith-drawer
+         ══════════════════════════════════════════════════════ -->
+
+    <section id="drawer" class="section">
+      <p class="section-label">pith-drawer</p>
+      <h2 class="section-title">Drawer</h2>
+      <p class="section-desc">
+        Slides in from any of the four viewport edges with a magnetic spring
+        animation. Grab the handle and drag toward the edge to dismiss — it
+        springs back if released before the threshold.
+      </p>
+      <div class="demo-card">
+        <!-- Direction row -->
+        <div class="demo-row" style="flex-wrap:wrap">
+          <pith-button variant="secondary" data-drawer="drawer-right">
+            Right
+            <svg slot="icon-end" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h10M8 3l4 4-4 4"/></svg>
+          </pith-button>
+          <pith-button variant="secondary" data-drawer="drawer-left">
+            <svg slot="icon-start" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7H2M6 3 2 7l4 4"/></svg>
+            Left
+          </pith-button>
+          <pith-button variant="secondary" data-drawer="drawer-bottom">
+            Bottom
+            <svg slot="icon-end" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 2v10M3 8l4 4 4-4"/></svg>
+          </pith-button>
+          <pith-button variant="secondary" data-drawer="drawer-top">
+            <svg slot="icon-start" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 12V2M3 6l4-4 4 4"/></svg>
+            Top
+          </pith-button>
+        </div>
+        <!-- Sizes row -->
+        <div class="demo-row">
+          <span style="font-size:0.75rem;color:var(--ui-text-subtle);white-space:nowrap">Sizes →</span>
+          <pith-button size="sm" data-drawer="drawer-right-sm">sm</pith-button>
+          <pith-button size="sm" variant="primary" data-drawer="drawer-right-md">md</pith-button>
+          <pith-button size="sm" data-drawer="drawer-right-lg">lg</pith-button>
+          <pith-button size="sm" data-drawer="drawer-right-full">full</pith-button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Drawer instances ───────────────────────────────── -->
+
+    <pith-drawer id="drawer-right" placement="right">
+      <span slot="header">Settings</span>
+      <p>This drawer slides in from the right.</p>
+      <p style="margin-top:1rem">Grab the vertical handle on the left edge and drag rightward to dismiss. Release before the threshold and watch it spring back.</p>
+      <div slot="footer">
+        <pith-button variant="ghost"   onclick="document.getElementById('drawer-right').open=false">Cancel</pith-button>
+        <pith-button variant="primary" onclick="document.getElementById('drawer-right').open=false">Save changes</pith-button>
+      </div>
+    </pith-drawer>
+
+    <pith-drawer id="drawer-left" placement="left">
+      <span slot="header">Navigation</span>
+      <p>This drawer slides in from the left.</p>
+      <p style="margin-top:1rem">Drag the handle on the right edge leftward to dismiss.</p>
+      <div slot="footer">
+        <pith-button variant="primary" style="width:100%" onclick="document.getElementById('drawer-left').open=false">Close</pith-button>
+      </div>
+    </pith-drawer>
+
+    <pith-drawer id="drawer-bottom" placement="bottom">
+      <span slot="header">Share</span>
+      <p>Bottom sheet — the most common pattern on mobile. Drag the handle at the top downward to dismiss.</p>
+      <div slot="footer">
+        <pith-button variant="ghost"   onclick="document.getElementById('drawer-bottom').open=false">Cancel</pith-button>
+        <pith-button variant="primary" onclick="document.getElementById('drawer-bottom').open=false">Share link</pith-button>
+      </div>
+    </pith-drawer>
+
+    <pith-drawer id="drawer-top" placement="top">
+      <span slot="header">Search</span>
+      <p>Slides in from the top. Drag the handle at the bottom upward to dismiss.</p>
+    </pith-drawer>
+
+    <pith-drawer id="drawer-right-sm" placement="right" size="sm">
+      <span slot="header">Compact panel</span>
+      <p>A narrow drawer (20 rem) — ideal for filters or a quick action panel.</p>
+    </pith-drawer>
+
+    <pith-drawer id="drawer-right-md" placement="right" size="md">
+      <span slot="header">Standard panel</span>
+      <p>Default size (28 rem) — covers most side panel use-cases.</p>
+    </pith-drawer>
+
+    <pith-drawer id="drawer-right-lg" placement="right" size="lg">
+      <span slot="header">Detail view</span>
+      <p>Large drawer (40 rem) — use for detail views, editing panels, or secondary content areas.</p>
+    </pith-drawer>
+
+    <pith-drawer id="drawer-right-full" placement="right" size="full">
+      <span slot="header">Full-screen panel</span>
+      <p>Full-width drawer — use sparingly; essentially a second page layer.</p>
+      <div slot="footer">
+        <pith-button variant="ghost" onclick="document.getElementById('drawer-right-full').open=false">Dismiss</pith-button>
+      </div>
+    </pith-drawer>
+
+    <hr />
+
+    <!-- ══════════════════════════════════════════════════════
+         Phase 4 — Signature Animation Components
+         ══════════════════════════════════════════════════════ -->
+
+    <!-- ── pith-counter ──────────────────────────────────── -->
+    <section id="counter" class="section">
+      <p class="section-label">pith-counter</p>
+      <h2 class="section-title">Counter</h2>
+      <p class="section-desc">Animated number ticker. Auto-starts on scroll. Five easing presets — including an elastic spring.</p>
+      <div class="demo-card">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0;text-align:center">
+
+          <div style="padding:2rem 1rem 1.5rem;border-right:var(--ui-border-width,1px) solid var(--ui-border);transition:border-color 300ms ease">
+            <pith-counter id="cnt-1" to="2847" duration="1400" style="font-size:2.25rem;font-weight:700;letter-spacing:-0.04em"></pith-counter>
+            <p style="font-size:0.75rem;letter-spacing:0.05em;text-transform:uppercase;color:var(--ui-text-muted);margin-top:0.5rem;font-weight:500">Downloads</p>
+          </div>
+
+          <div style="padding:2rem 1rem 1.5rem;border-right:var(--ui-border-width,1px) solid var(--ui-border);transition:border-color 300ms ease">
+            <pith-counter id="cnt-2" to="99.9" decimals="1" suffix="%" duration="1800" easing="spring" style="font-size:2.25rem;font-weight:700;letter-spacing:-0.04em"></pith-counter>
+            <p style="font-size:0.75rem;letter-spacing:0.05em;text-transform:uppercase;color:var(--ui-text-muted);margin-top:0.5rem;font-weight:500">Uptime</p>
+          </div>
+
+          <div style="padding:2rem 1rem 1.5rem;border-right:var(--ui-border-width,1px) solid var(--ui-border);transition:border-color 300ms ease">
+            <pith-counter id="cnt-3" prefix="$" to="42" suffix="k" duration="1100" easing="ease-in-out" style="font-size:2.25rem;font-weight:700;letter-spacing:-0.04em"></pith-counter>
+            <p style="font-size:0.75rem;letter-spacing:0.05em;text-transform:uppercase;color:var(--ui-text-muted);margin-top:0.5rem;font-weight:500">Revenue</p>
+          </div>
+
+          <div style="padding:2rem 1rem 1.5rem">
+            <pith-counter id="cnt-4" to="8" suffix="ms" duration="900" easing="ease-out" style="font-size:2.25rem;font-weight:700;letter-spacing:-0.04em"></pith-counter>
+            <p style="font-size:0.75rem;letter-spacing:0.05em;text-transform:uppercase;color:var(--ui-text-muted);margin-top:0.5rem;font-weight:500">Latency</p>
+          </div>
+
+        </div>
+        <div style="border-top:var(--ui-border-width,1px) solid var(--ui-border);padding:0.875rem 1rem;display:flex;align-items:center;justify-content:space-between;transition:border-color 300ms ease">
+          <span style="font-size:0.8125rem;color:var(--ui-text-muted)">Scroll past and back, or click replay</span>
+          <pith-button id="counter-replay" variant="ghost" size="sm">
+            <svg slot="icon-start" width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+              <path d="M1.5 6.5A5 5 0 0 1 6.5 1.5c1.5 0 2.83.66 3.75 1.7L11.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              <path d="M11.5 1.5v3h-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Replay
+          </pith-button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── pith-magnetic ─────────────────────────────────── -->
+    <section id="magnetic" class="section">
+      <p class="section-label">pith-magnetic</p>
+      <h2 class="section-title">Magnetic</h2>
+      <p class="section-desc">Cursor-following spring attraction. Move your mouse near the buttons — the pull strengthens as you approach. Desktop only.</p>
+      <div class="demo-card">
+        <div style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:2.5rem;padding:3.5rem 2rem">
+
+          <div style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:0.625rem">
+            <pith-magnetic>
+              <pith-button variant="primary" size="lg">Hover near me</pith-button>
+            </pith-magnetic>
+            <span style="font-size:0.75rem;color:var(--ui-text-muted)">strength 0.4 (default)</span>
+          </div>
+
+          <div style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:0.625rem">
+            <pith-magnetic strength="0.65" distance="100">
+              <pith-button variant="secondary" size="lg">Strong pull</pith-button>
+            </pith-magnetic>
+            <span style="font-size:0.75rem;color:var(--ui-text-muted)">strength 0.65</span>
+          </div>
+
+          <div style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:0.625rem">
+            <pith-magnetic strength="0.18" distance="60">
+              <pith-button variant="ghost" size="lg">Subtle pull</pith-button>
+            </pith-magnetic>
+            <span style="font-size:0.75rem;color:var(--ui-text-muted)">strength 0.18</span>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── pith-typewriter ───────────────────────────────── -->
+    <section id="typewriter" class="section">
+      <p class="section-label">pith-typewriter</p>
+      <h2 class="section-title">Typewriter</h2>
+      <p class="section-desc">Character-by-character text reveal with a blinking cursor. Brutal theme uses a block █ cursor; Glass adds a glowing line.</p>
+      <div class="demo-card" style="padding:0">
+
+        <!-- One-shot heading -->
+        <div style="padding:1.75rem 1.5rem;border-bottom:var(--ui-border-width,1px) solid var(--ui-border);transition:border-color 300ms ease">
+          <p style="font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ui-text-subtle);margin-bottom:0.625rem;font-weight:600">One-shot</p>
+          <h3 style="font-size:1.5rem;font-weight:700;letter-spacing:-0.03em;color:var(--ui-text);line-height:1.3">
+            <pith-typewriter id="tw-1" text="Building interfaces that feel right." delay="200"></pith-typewriter>
+          </h3>
+        </div>
+
+        <!-- Loop with erase — terminal style -->
+        <div style="padding:1.75rem 1.5rem;border-bottom:var(--ui-border-width,1px) solid var(--ui-border);background:var(--ui-surface-sunken);transition:border-color 300ms ease,background 300ms ease">
+          <p style="font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ui-text-subtle);margin-bottom:0.875rem;font-weight:600">Loop + erase</p>
+          <p style="font-family:var(--font-mono);font-size:0.9375rem;color:var(--ui-text-muted);margin:0;line-height:1.6">
+            <span style="color:var(--ui-success);font-weight:600;user-select:none">❯</span>
+            <span style="color:var(--ui-text);margin-left:0.4em">pith</span>
+            <span style="margin-left:0.25em">
+              <pith-typewriter id="tw-2" text="install @pith/ui" loop erase speed="70" erase-speed="35" loop-delay="1800" delay="400"></pith-typewriter>
+            </span>
+          </p>
+        </div>
+
+        <!-- Slower contemplative quote -->
+        <div style="padding:1.75rem 1.5rem">
+          <p style="font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ui-text-subtle);margin-bottom:0.625rem;font-weight:600">Slow reveal</p>
+          <blockquote style="font-size:1.125rem;font-style:italic;color:var(--ui-text-muted);margin:0;line-height:1.7;border-left:3px solid var(--ui-border);padding-left:1rem;transition:border-color 300ms ease">
+            <pith-typewriter id="tw-3" text="The details are not the details. They make the design." speed="40" delay="300"></pith-typewriter>
+          </blockquote>
+        </div>
+
+      </div>
+      <div style="margin-top:0.75rem;display:flex;justify-content:flex-end">
+        <pith-button id="tw-replay" variant="ghost" size="sm">
+          <svg slot="icon-start" width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+            <path d="M1.5 6.5A5 5 0 0 1 6.5 1.5c1.5 0 2.83.66 3.75 1.7L11.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M11.5 1.5v3h-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Replay
+        </pith-button>
+      </div>
+    </section>
+
+    <!-- ── pith-spinner ─────────────────────────────────────── -->
+    <hr />
+    <section id="spinner" class="section">
+      <p class="section-label">pith-spinner</p>
+      <h2 class="section-title">Spinner</h2>
+      <p class="section-desc">
+        Three structurally distinct animations — one per theme. <strong>Ink</strong> traces the
+        Pith brand triangle via <code>stroke-dashoffset</code>. <strong>Glass</strong> pulses
+        three concentric sonar rings outward. <strong>Brutal</strong> counts in binary:
+        three squares cycling filled&hairsp;↔&hairsp;hollow with no easing. Switch themes above
+        to see the structure change entirely.
+      </p>
+
+      <div class="demo-card">
+        <!-- Sizes -->
+        <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0 0 1.25rem">Sizes</p>
+        <div class="demo-row" style="align-items:center;gap:1.5rem">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
+            <pith-spinner size="xs"></pith-spinner>
+            <span style="font-size:var(--text-xs,0.75rem);color:var(--ui-text-subtle);font-family:var(--font-mono)">xs</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
+            <pith-spinner size="sm"></pith-spinner>
+            <span style="font-size:var(--text-xs,0.75rem);color:var(--ui-text-subtle);font-family:var(--font-mono)">sm</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
+            <pith-spinner size="md"></pith-spinner>
+            <span style="font-size:var(--text-xs,0.75rem);color:var(--ui-text-subtle);font-family:var(--font-mono)">md</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
+            <pith-spinner size="lg"></pith-spinner>
+            <span style="font-size:var(--text-xs,0.75rem);color:var(--ui-text-subtle);font-family:var(--font-mono)">lg</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
+            <pith-spinner size="xl"></pith-spinner>
+            <span style="font-size:var(--text-xs,0.75rem);color:var(--ui-text-subtle);font-family:var(--font-mono)">xl</span>
+          </div>
+        </div>
+
+        <!-- Inline with text -->
+        <div class="demo-row" style="margin-top:1.5rem;padding-top:1.5rem;border-top:var(--ui-border-width,1px) solid var(--ui-border)">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0 0 0.875rem;width:100%">Inline</p>
+          <div style="display:flex;align-items:center;gap:0.5rem;font-size:var(--text-sm,0.875rem);color:var(--ui-text-muted)">
+            <pith-spinner size="sm"></pith-spinner>
+            Loading…
+          </div>
+          <div style="display:flex;align-items:center;gap:0.625rem;margin-left:2rem">
+            <pith-button variant="primary" size="sm" disabled>
+              <pith-spinner slot="icon-start" size="xs" label=""></pith-spinner>
+              Saving
+            </pith-button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── pith-accordion ─────────────────────────────────── -->
+    <hr />
+    <section id="accordion" class="section">
+      <p class="section-label">pith-accordion</p>
+      <h2 class="section-title">Accordion</h2>
+      <p class="section-desc">
+        Accessible, animated disclosure panels. Three variants:
+        <strong>Default</strong> (contained card), <strong>Flush</strong> (ruled lines, full-bleed),
+        and <strong>Separated</strong> (each item is its own card). The panel uses a CSS
+        <code>grid-template-rows</code> animation — no JS height measurement needed.
+        Add <code>multiple</code> to allow more than one item open at once.
+      </p>
+
+      <!-- Default + Flush stacked -->
+      <div style="display:flex;flex-direction:column;gap:2rem">
+
+        <!-- Default variant -->
+        <div>
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);
+                    text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);
+                    margin:0 0 0.75rem">Default</p>
+          <pith-accordion>
+            <pith-accordion-item open>
+              <span slot="header">What is Pith?</span>
+              Pith (<code>@pith/ui</code>) is a themeable, accessibility-first Web Component library built
+              on Lit 3. Drop in one attribute — <code>data-theme="ink"</code>, <code>"glass"</code>, or
+              <code>"brutal"</code> — and every component adapts instantly.
+            </pith-accordion-item>
+            <pith-accordion-item>
+              <span slot="header">Is it framework-agnostic?</span>
+              Yes. Pith ships as standard Custom Elements. Works with React, Vue, Svelte, Angular, or
+              plain HTML. The <code>@pith/react</code> package provides typed React wrappers with
+              full event forwarding.
+            </pith-accordion-item>
+            <pith-accordion-item>
+              <span slot="header">How is dark mode handled?</span>
+              Add <code>data-dark</code> to <code>&lt;html&gt;</code>. Each theme has independent
+              light and dark token sets — toggling dark mode never overrides your chosen theme.
+            </pith-accordion-item>
+          </pith-accordion>
+        </div>
+
+        <!-- Flush variant -->
+        <div>
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);
+                    text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);
+                    margin:0 0 0.75rem">Flush</p>
+          <pith-accordion variant="flush">
+            <pith-accordion-item>
+              <span slot="header">How do I install it?</span>
+              <code>npm install @pith/ui lit</code> — that's it. Lit is the only peer dependency.
+              Alternatively, load from a CDN for zero-build usage.
+            </pith-accordion-item>
+            <pith-accordion-item open>
+              <span slot="header">What about tree-shaking?</span>
+              Each component is a standalone ES module. Import only what you need:
+              <code>import '@pith/ui/button'</code>. Unused components add zero bytes to your bundle.
+            </pith-accordion-item>
+            <pith-accordion-item>
+              <span slot="header">Is it accessible?</span>
+              Each item uses a <code>&lt;button&gt;</code> trigger with <code>aria-expanded</code> and
+              <code>aria-controls</code>. The panel has <code>role="region"</code> and
+              <code>aria-labelledby</code>. Focus is never trapped — keyboard navigation flows naturally.
+            </pith-accordion-item>
+          </pith-accordion>
+        </div>
+      </div>
+
+      <!-- Separated variant — full width -->
+      <div style="margin-top:2rem">
+        <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);
+                  text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);
+                  margin:0 0 0.75rem">Separated · with icons</p>
+        <pith-accordion variant="separated">
+
+          <pith-accordion-item>
+            <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/>
+              <rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/>
+              <rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/>
+              <rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            <span slot="header">Theming system</span>
+            Tokens live in <code>themes.css</code> as CSS custom properties under the <code>--ui-*</code>
+            namespace. Switching themes is one attribute change. Every component — including this one —
+            reads from those tokens through Shadow DOM inheritance.
+          </pith-accordion-item>
+
+          <pith-accordion-item open>
+            <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M8 5v4l2.5 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span slot="header">Animation philosophy</span>
+            Pith believes animations should be purposeful and respectful. Durations are short (150–320 ms),
+            easing is physics-informed, and every motion honours <code>prefers-reduced-motion</code>.
+            The accordion panel uses a CSS grid trick — no JS height polling, no layout thrash.
+          </pith-accordion-item>
+
+          <pith-accordion-item>
+            <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M2 8h12M8 2l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span slot="header">Browser support</span>
+            Targets all modern evergreen browsers. The grid animation requires Chrome 107+, Firefox 110+,
+            and Safari 16+. For older targets, the panel opens/closes without a height transition —
+            content is always accessible.
+          </pith-accordion-item>
+
+        </pith-accordion>
+      </div>
+
+      <!-- Multiple open demo — subtle note -->
+      <div style="margin-top:2rem">
+        <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);
+                  text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);
+                  margin:0 0 0.75rem">Multi-open <code style="text-transform:none">[multiple]</code></p>
+        <pith-accordion multiple>
+          <pith-accordion-item open>
+            <span slot="header">Multiple items can be open simultaneously</span>
+            Add the <code>multiple</code> attribute to <code>&lt;pith-accordion&gt;</code> to switch from
+            exclusive ("accordion") behavior to independent ("disclosure") behavior.
+          </pith-accordion-item>
+          <pith-accordion-item open>
+            <span slot="header">Both of these are open at the same time</span>
+            Without <code>multiple</code>, opening this item would close the one above.
+            With it, both stay open until individually collapsed.
+          </pith-accordion-item>
+          <pith-accordion-item disabled>
+            <span slot="header">This item is disabled</span>
+            The <code>disabled</code> attribute blocks interaction and renders the trigger at reduced
+            opacity. The panel content is still in the DOM (for SEO / copy-paste), just inaccessible.
+          </pith-accordion-item>
+        </pith-accordion>
+      </div>
+    </section>
+
+    <!-- ── pith-breadcrumb ────────────────────────────────── -->
+    <hr />
+    <section id="breadcrumb" class="section">
+      <p class="section-label">pith-breadcrumb</p>
+      <h2 class="section-title">Breadcrumb</h2>
+      <p class="section-desc">
+        Accessible navigation landmark. Renders a <code>&lt;nav aria-label&gt;</code> containing
+        an ordered list of crumbs. Each item is either a navigable <code>&lt;a&gt;</code> link or a
+        static <code>&lt;span aria-current="page"&gt;</code> for the active step.
+        Separators are rendered inside Shadow DOM — the first item's separator hides itself
+        automatically via <code>:host(:first-child)</code>, no parent coordination needed.
+        Ink and Glass use a chevron; Brutal uses a bold monospace <code>/</code> and
+        frames the entire nav in a hard-bordered strip.
+      </p>
+
+      <div class="demo-card" style="display:flex;flex-direction:column;gap:1.5rem">
+
+        <!-- Row 1: Basic navigation trail -->
+        <div>
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);
+                    text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);
+                    margin:0 0 0.75rem">Default</p>
+          <pith-breadcrumb>
+            <pith-breadcrumb-item href="javascript:void(0)">Home</pith-breadcrumb-item>
+            <pith-breadcrumb-item href="javascript:void(0)">Components</pith-breadcrumb-item>
+            <pith-breadcrumb-item current>Breadcrumb</pith-breadcrumb-item>
+          </pith-breadcrumb>
+        </div>
+
+        <!-- Row 2: With icon on home crumb -->
+        <div>
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);
+                    text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);
+                    margin:0 0 0.75rem">With icon</p>
+          <pith-breadcrumb>
+            <pith-breadcrumb-item href="javascript:void(0)">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M2 6.5L8 2l6 4.5V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6.5z"
+                      stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                <path d="M6 15v-5h4v5" stroke="currentColor" stroke-width="1.5"
+                      stroke-linejoin="round"/>
+              </svg>
+              Home
+            </pith-breadcrumb-item>
+            <pith-breadcrumb-item href="javascript:void(0)">Docs</pith-breadcrumb-item>
+            <pith-breadcrumb-item href="javascript:void(0)">Components</pith-breadcrumb-item>
+            <pith-breadcrumb-item current>Breadcrumb</pith-breadcrumb-item>
+          </pith-breadcrumb>
+        </div>
+
+        <!-- Row 3: Disabled intermediate step -->
+        <div>
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);
+                    text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);
+                    margin:0 0 0.75rem">With disabled step</p>
+          <pith-breadcrumb>
+            <pith-breadcrumb-item href="javascript:void(0)">Home</pith-breadcrumb-item>
+            <pith-breadcrumb-item disabled>Restricted</pith-breadcrumb-item>
+            <pith-breadcrumb-item current>Current Page</pith-breadcrumb-item>
+          </pith-breadcrumb>
+        </div>
+
+        <!-- Row 4: File path style with custom aria-label -->
+        <div>
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);
+                    text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);
+                    margin:0 0 0.75rem">Custom label — file path style</p>
+          <pith-breadcrumb label="File path">
+            <pith-breadcrumb-item href="javascript:void(0)">~</pith-breadcrumb-item>
+            <pith-breadcrumb-item href="javascript:void(0)">dev</pith-breadcrumb-item>
+            <pith-breadcrumb-item href="javascript:void(0)">personal</pith-breadcrumb-item>
+            <pith-breadcrumb-item href="javascript:void(0)">components</pith-breadcrumb-item>
+            <pith-breadcrumb-item current>context.md</pith-breadcrumb-item>
+          </pith-breadcrumb>
+        </div>
+
+      </div><!-- /.demo-card -->
+
+    </section>
+
+    <!-- ── pith-sidebar ───────────────────────────────────── -->
+    <section id="sidebar" class="section">
+      <h2 class="section-title">Sidebar</h2>
+      <p class="section-desc">Collapsible navigation panel — collapses to an icon-only rail. Toggle the button in the demo to see the transition.</p>
+
+      <!-- ── Live Demo ──────────────────────────────────────── -->
+      <p class="section-label">pith-sidebar</p>
+      <div class="demo-card" style="padding: 0; overflow: hidden; border-radius: var(--ui-radius-lg);">
+        <div style="height: 380px; display: flex; overflow: hidden;">
+
+          <!-- Sidebar -->
+          <pith-sidebar id="demo-sb" label="App Navigation">
+
+            <!-- Header slot: brand mark -->
+            <div slot="header" style="display:flex; align-items:center; gap:0.75rem; padding:1rem 0.75rem 0.75rem; border-bottom: var(--ui-border-width,1px) solid var(--ui-border); overflow:hidden;">
+              <span style="flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; width:2rem; height:2rem; border-radius:var(--ui-radius-sm); background:var(--ui-primary); color:var(--ui-primary-fg);">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="8,2 14,14 2,14"/>
+                </svg>
+              </span>
+              <span style="font-size:var(--text-sm); font-weight:var(--weight-bold,700); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Pith UI</span>
+            </div>
+
+            <!-- Main navigation -->
+            <pith-sidebar-section label="Main">
+              <pith-sidebar-item href="javascript:void(0)" active>
+                <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
+                  <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>
+                </svg>
+                Dashboard
+              </pith-sidebar-item>
+              <pith-sidebar-item href="javascript:void(0)">
+                <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="2,12 6,7 9,10 12,6 14,8"/>
+                </svg>
+                Analytics
+                <pith-badge slot="badge" size="sm">4</pith-badge>
+              </pith-sidebar-item>
+              <pith-sidebar-item href="javascript:void(0)">
+                <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/>
+                </svg>
+                Users
+              </pith-sidebar-item>
+            </pith-sidebar-section>
+
+            <!-- Config navigation -->
+            <pith-sidebar-section label="Config">
+              <pith-sidebar-item href="javascript:void(0)">
+                <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="8" cy="8" r="2.5"/>
+                  <path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3.05 3.05l1.06 1.06M11.89 11.89l1.06 1.06M3.05 12.95l1.06-1.06M11.89 4.11l1.06-1.06"/>
+                </svg>
+                Settings
+              </pith-sidebar-item>
+              <pith-sidebar-item href="javascript:void(0)" disabled>
+                <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="8" cy="8" r="6.5"/><path d="M8 7v4"/><circle cx="8" cy="5" r="0.5" fill="currentColor" stroke="none"/>
+                </svg>
+                Help
+              </pith-sidebar-item>
+            </pith-sidebar-section>
+
+            <!-- Footer slot: user profile -->
+            <div slot="footer" style="border-top: var(--ui-border-width,1px) solid var(--ui-border); padding: 0.5rem;">
+              <pith-sidebar-item href="javascript:void(0)">
+                <pith-avatar slot="icon" size="xs" initials="RD"></pith-avatar>
+                Ranjeet D.
+              </pith-sidebar-item>
+            </div>
+
+          </pith-sidebar>
+
+          <!-- Main content area -->
+          <div style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+            <!-- Content toolbar -->
+            <div style="flex-shrink:0; padding:0.75rem 1rem; border-bottom: var(--ui-border-width,1px) solid var(--ui-border); display:flex; align-items:center; gap:0.75rem;">
+              <button
+                onclick="document.getElementById('demo-sb').toggleAttribute('collapsed')"
+                style="all:unset; box-sizing:border-box; display:inline-flex; align-items:center; gap:0.375rem; padding:0.375rem 0.75rem; border-radius:var(--ui-radius-sm); background:var(--ui-surface-overlay); color:var(--ui-text-muted); font-size:var(--text-sm,0.875rem); font-weight:var(--weight-medium,500); cursor:pointer; border:var(--ui-border-width,1px) solid var(--ui-border);"
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+                  <line x1="2" y1="4" x2="14" y2="4"/><line x1="2" y1="8" x2="10" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/>
+                </svg>
+                Toggle rail
+              </button>
+              <span style="font-size:var(--text-sm,0.875rem); color:var(--ui-text-subtle);">Dashboard</span>
+            </div>
+
+            <!-- Mock content body -->
+            <div style="flex:1; padding:1.25rem 1rem; overflow:auto; display:flex; flex-direction:column; gap:0.75rem;">
+              <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:0.625rem;">
+                <div style="border-radius:var(--ui-radius); padding:0.875rem 1rem; background:var(--ui-surface-raised); border:var(--ui-border-width,1px) solid var(--ui-border);">
+                  <div style="font-size:var(--text-xs,0.75rem); color:var(--ui-text-subtle); margin-bottom:0.25rem; text-transform:uppercase; letter-spacing:0.06em;">Users</div>
+                  <div style="font-size:var(--text-xl,1.25rem); font-weight:var(--weight-bold,700); color:var(--ui-text);">4,821</div>
+                </div>
+                <div style="border-radius:var(--ui-radius); padding:0.875rem 1rem; background:var(--ui-surface-raised); border:var(--ui-border-width,1px) solid var(--ui-border);">
+                  <div style="font-size:var(--text-xs,0.75rem); color:var(--ui-text-subtle); margin-bottom:0.25rem; text-transform:uppercase; letter-spacing:0.06em;">Revenue</div>
+                  <div style="font-size:var(--text-xl,1.25rem); font-weight:var(--weight-bold,700); color:var(--ui-text);">$12.4k</div>
+                </div>
+                <div style="border-radius:var(--ui-radius); padding:0.875rem 1rem; background:var(--ui-surface-raised); border:var(--ui-border-width,1px) solid var(--ui-border);">
+                  <div style="font-size:var(--text-xs,0.75rem); color:var(--ui-text-subtle); margin-bottom:0.25rem; text-transform:uppercase; letter-spacing:0.06em;">Uptime</div>
+                  <div style="font-size:var(--text-xl,1.25rem); font-weight:var(--weight-bold,700); color:var(--ui-text);">99.9%</div>
+                </div>
+              </div>
+              <div style="flex:1; border-radius:var(--ui-radius); background:var(--ui-surface-raised); border:var(--ui-border-width,1px) solid var(--ui-border); min-height:80px; display:flex; align-items:center; justify-content:center;">
+                <span style="font-size:var(--text-sm,0.875rem); color:var(--ui-text-subtle);">Chart area</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── pith-input ──────────────────────────────────────── -->
+    <hr />
+    <section id="input" class="section">
+      <p class="section-label">pith-input</p>
+      <h2 class="section-title">Input</h2>
+      <p class="section-desc">
+        Form-associated text input with label, placeholder, error, and hint messaging.
+        The <code>required</code> attribute appends an asterisk and wires <code>aria-required</code>.
+        Fires <code>pith-input</code> on every keystroke and <code>pith-change</code> on commit.
+      </p>
+      <div class="demo-card" style="display:flex;flex-direction:column;gap:1.5rem;max-width:28rem">
+
+        <!-- Simple -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Simple</p>
+          <pith-input label="Full name" placeholder="Jane Smith"></pith-input>
+        </div>
+
+        <!-- Required -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Required</p>
+          <pith-input label="Email" type="email" placeholder="you@example.com" required hint="We'll never share your email."></pith-input>
+        </div>
+
+        <!-- Error state -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Error</p>
+          <pith-input label="Password" type="password" value="abc" required error="Must be at least 8 characters."></pith-input>
+        </div>
+
+        <!-- Sizes -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Sizes</p>
+          <pith-input size="sm" placeholder="Small"></pith-input>
+          <pith-input size="md" placeholder="Medium (default)"></pith-input>
+          <pith-input size="lg" placeholder="Large"></pith-input>
+        </div>
+
+        <!-- Disabled -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Disabled</p>
+          <pith-input label="Username" value="alice" disabled></pith-input>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── pith-slider ─────────────────────────────────────── -->
+    <hr />
+    <section id="slider" class="section">
+      <p class="section-label">pith-slider</p>
+      <h2 class="section-title">Slider</h2>
+      <p class="section-desc">
+        Range slider with a live value readout. Add <code>show-buttons</code> to get
+        <strong>−</strong> and <strong>+</strong> step buttons at each end — useful for
+        precise adjustment without a keyboard. All thumb and track shapes respect the active theme.
+      </p>
+      <div class="demo-card" style="display:flex;flex-direction:column;gap:1.75rem;max-width:28rem">
+
+        <!-- Basic -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Basic</p>
+          <pith-slider label="Volume" value="60"></pith-slider>
+        </div>
+
+        <!-- With step buttons -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">With step buttons</p>
+          <pith-slider label="Quantity" min="1" max="20" step="1" value="8" show-buttons></pith-slider>
+        </div>
+
+        <!-- Fine steps -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Step 0.1 · show-buttons</p>
+          <pith-slider label="Opacity" min="0" max="1" step="0.1" value="0.7" show-buttons></pith-slider>
+        </div>
+
+        <!-- Disabled -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Disabled</p>
+          <pith-slider label="Brightness" value="45" disabled show-buttons></pith-slider>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── pith-option-card ────────────────────────────────── -->
+    <hr />
+    <section id="option-card" class="section">
+      <p class="section-label">pith-option-card</p>
+      <h2 class="section-title">Option Card</h2>
+      <p class="section-desc">
+        A clickable tile with a heading, description, and optional icon. By default cards sharing
+        the same <code>name</code> behave as a <strong>radio group</strong> — selecting one
+        deselects the others automatically. Add <code>multiple</code> for independent
+        <strong>checkbox</strong> behaviour. Form-associated: selected value is reported to
+        native <code>&lt;form&gt;</code> on submission.
+      </p>
+
+      <!-- Radio group -->
+      <div style="margin-bottom:2rem">
+        <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0 0 0.75rem">Radio group · single select</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:0.625rem">
+          <pith-option-card name="photo-filter" value="none"
+            heading="None"
+            description="Keep the original colours"
+            selected>
+          </pith-option-card>
+          <pith-option-card name="photo-filter" value="bw"
+            heading="Black &amp; White"
+            description="Strip all colour information">
+          </pith-option-card>
+          <pith-option-card name="photo-filter" value="warm"
+            heading="Warm"
+            description="Shift tones toward amber">
+          </pith-option-card>
+          <pith-option-card name="photo-filter" value="cool"
+            heading="Cool"
+            description="Shift tones toward blue">
+          </pith-option-card>
+        </div>
+      </div>
+
+      <!-- Multi-select with icons -->
+      <div style="margin-bottom:2rem">
+        <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0 0 0.75rem">Checkbox mode · multi-select · with icons</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(13rem,1fr));gap:0.625rem">
+          <pith-option-card multiple name="features" value="a11y"
+            heading="Accessibility"
+            description="ARIA roles, keyboard nav, focus rings"
+            selected>
+            <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="3.5" r="1.5"/><path d="M5 7h6M8 7v6M5 13h3M11 13H8"/></svg>
+          </pith-option-card>
+          <pith-option-card multiple name="features" value="dark"
+            heading="Dark mode"
+            description="Automatic per-theme dark tokens">
+            <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M13.5 10A6 6 0 0 1 6 2.5a6 6 0 1 0 7.5 7.5z"/></svg>
+          </pith-option-card>
+          <pith-option-card multiple name="features" value="motion"
+            heading="Animations"
+            description="Physics-informed spring curves"
+            selected>
+            <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 8c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6"/><polyline points="8,5 8,8 10,10"/></svg>
+          </pith-option-card>
+        </div>
+      </div>
+
+      <!-- Disabled -->
+      <div>
+        <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0 0 0.75rem">Disabled state</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:0.625rem;max-width:24rem">
+          <pith-option-card name="plan-disabled" value="free"
+            heading="Free"
+            description="Up to 3 projects"
+            selected disabled>
+          </pith-option-card>
+          <pith-option-card name="plan-disabled" value="pro"
+            heading="Pro"
+            description="Unlimited projects"
+            disabled>
+          </pith-option-card>
+        </div>
+      </div>
+
+      <!-- Action / CTA -->
+      <div style="margin-top:2rem">
+        <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0 0 0.5rem">Action / CTA · <code style="font-size:inherit;font-weight:inherit;text-transform:none;letter-spacing:normal">variant="action"</code></p>
+        <p style="font-size:var(--text-xs,0.75rem);color:var(--ui-text-muted);margin:0 0 0.75rem;line-height:1.5">Fires <code>pith-activate</code> on click. <code>role="button"</code>, no selection state, arrow trails on hover.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(13rem,1fr));gap:0.625rem">
+          <pith-option-card variant="action" value="export-png"
+            heading="Export as PNG"
+            description="Lossless, transparent background">
+            <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 9l2 2 4-4"/></svg>
+          </pith-option-card>
+          <pith-option-card variant="action" value="export-svg"
+            heading="Export as SVG"
+            description="Scalable, editable vector format">
+            <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M5.5 10c.5 1 1.5 1.5 2.5 1.5s2-.5 2.5-1.5-1-2-2.5-2-3-1-2.5-2S6.5 4.5 8 4.5s2 .5 2.5 1.5"/></svg>
+          </pith-option-card>
+          <pith-option-card variant="action" value="share"
+            heading="Share link"
+            description="Copy a shareable URL to clipboard">
+            <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="3" r="1.5"/><circle cx="4" cy="8" r="1.5"/><circle cx="12" cy="13" r="1.5"/><line x1="5.4" y1="7.1" x2="10.6" y2="4.4"/><line x1="5.4" y1="8.9" x2="10.6" y2="11.6"/></svg>
+          </pith-option-card>
+          <pith-option-card variant="action" value="delete"
+            heading="Delete project"
+            description="Permanently removes all files"
+            disabled>
+            <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="2,4 14,4"/><path d="M6 4V2h4v2"/><rect x="3" y="4" width="10" height="10" rx="1.5"/><line x1="6" y1="7" x2="6" y2="11"/><line x1="10" y1="7" x2="10" y2="11"/></svg>
+          </pith-option-card>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── pith-checkbox ──────────────────────────────────── -->
+    <hr />
+    <section id="checkbox" class="section">
+      <p class="section-label">pith-checkbox</p>
+      <h2 class="section-title">Checkbox</h2>
+      <p class="section-desc">
+        Form-associated checkbox with full keyboard support and an
+        <code>indeterminate</code> (mixed) state. Uses a visually-hidden native
+        <code>&lt;input type="checkbox"&gt;</code> for screen reader compatibility.
+        Fires <code>pith-change</code> with <code>{ checked, indeterminate }</code>.
+      </p>
+      <div class="demo-card" style="display:flex;flex-direction:column;gap:1.25rem">
+
+        <!-- States (display-only — pointer-events:none prevents toggling) -->
+        <div style="display:flex;flex-direction:column;gap:0.625rem;pointer-events:none;user-select:none">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">States</p>
+          <pith-checkbox>Unchecked</pith-checkbox>
+          <pith-checkbox checked>Checked</pith-checkbox>
+          <pith-checkbox indeterminate>Indeterminate</pith-checkbox>
+          <pith-checkbox disabled>Disabled unchecked</pith-checkbox>
+          <pith-checkbox checked disabled>Disabled checked</pith-checkbox>
+        </div>
+
+        <!-- Sizes -->
+        <div style="display:flex;flex-direction:column;gap:0.625rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Sizes</p>
+          <pith-checkbox size="sm" checked>Small</pith-checkbox>
+          <pith-checkbox size="md" checked>Medium (default)</pith-checkbox>
+          <pith-checkbox size="lg" checked>Large</pith-checkbox>
+        </div>
+
+        <!-- No label -->
+        <div style="display:flex;flex-direction:column;gap:0.625rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">No label</p>
+          <pith-checkbox checked></pith-checkbox>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── pith-select ────────────────────────────────────── -->
+    <hr />
+    <section id="select" class="section">
+      <p class="section-label">pith-select · pith-option</p>
+      <h2 class="section-title">Select / Combobox</h2>
+      <p class="section-desc">
+        Form-associated select with keyboard navigation and an optional
+        <code>searchable</code> combobox mode that filters options as you type.
+        Options are declared with <code>&lt;pith-option&gt;</code> children.
+        Fires <code>pith-change</code> with <code>{ value }</code>.
+      </p>
+      <div class="demo-card" style="display:flex;flex-direction:column;gap:1.5rem;max-width:22rem">
+
+        <!-- Basic -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Basic</p>
+          <pith-select name="framework" placeholder="Pick a framework">
+            <pith-option value="lit">Lit</pith-option>
+            <pith-option value="react">React</pith-option>
+            <pith-option value="vue">Vue</pith-option>
+            <pith-option value="svelte">Svelte</pith-option>
+            <pith-option value="angular" disabled>Angular (coming soon)</pith-option>
+          </pith-select>
+        </div>
+
+        <!-- Pre-selected -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Pre-selected</p>
+          <pith-select name="theme" value="glass">
+            <pith-option value="ink">Ink</pith-option>
+            <pith-option value="glass">Glass</pith-option>
+            <pith-option value="brutal">Brutal</pith-option>
+          </pith-select>
+        </div>
+
+        <!-- Searchable / combobox -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Searchable (combobox)</p>
+          <pith-select name="country" placeholder="Search country…" searchable>
+            <pith-option value="us">United States</pith-option>
+            <pith-option value="gb">United Kingdom</pith-option>
+            <pith-option value="de">Germany</pith-option>
+            <pith-option value="fr">France</pith-option>
+            <pith-option value="jp">Japan</pith-option>
+            <pith-option value="au">Australia</pith-option>
+            <pith-option value="ca">Canada</pith-option>
+            <pith-option value="br">Brazil</pith-option>
+          </pith-select>
+        </div>
+
+        <!-- Sizes -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Sizes</p>
+          <pith-select size="sm" placeholder="Small"><pith-option value="a">Option A</pith-option></pith-select>
+          <pith-select size="md" placeholder="Medium (default)"><pith-option value="a">Option A</pith-option></pith-select>
+          <pith-select size="lg" placeholder="Large"><pith-option value="a">Option A</pith-option></pith-select>
+        </div>
+
+        <!-- Disabled -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Disabled</p>
+          <pith-select name="x" value="react" disabled>
+            <pith-option value="react">React</pith-option>
+          </pith-select>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── pith-file-upload ──────────────────────────────── -->
+    <hr />
+    <section id="file-upload" class="section">
+      <p class="section-label">pith-file-upload</p>
+      <h2 class="section-title">File Upload</h2>
+      <p class="section-desc">
+        Form-associated drag-and-drop file zone. Click to browse or drag files onto the zone.
+        Supports <code>multiple</code>, <code>accept</code>, and per-file <code>max-size</code> validation.
+        Fires <code>pith-change</code> with <code>{ files: File[] }</code>.
+      </p>
+      <div class="demo-card" style="display:flex;flex-direction:column;gap:1.5rem">
+
+        <!-- Default -->
+        <div style="display:flex;flex-direction:column;gap:0.625rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Default</p>
+          <pith-file-upload name="file" hint="Any file up to 10 MB"></pith-file-upload>
+        </div>
+
+        <!-- Accept + multiple -->
+        <div style="display:flex;flex-direction:column;gap:0.625rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Images only · multiple</p>
+          <pith-file-upload
+            name="images"
+            accept="image/*"
+            multiple
+            label="Drop images here or click to browse"
+            max-size="5242880"
+          ></pith-file-upload>
+        </div>
+
+        <!-- Error state -->
+        <div style="display:flex;flex-direction:column;gap:0.625rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Error</p>
+          <pith-file-upload name="doc" accept=".pdf" error="File must be a PDF."></pith-file-upload>
+        </div>
+
+        <!-- Sizes -->
+        <div style="display:flex;flex-direction:column;gap:0.625rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Sizes</p>
+          <pith-file-upload size="sm" label="Small upload zone"></pith-file-upload>
+          <pith-file-upload size="md" label="Medium (default)"></pith-file-upload>
+          <pith-file-upload size="lg" label="Large upload zone"></pith-file-upload>
+        </div>
+
+        <!-- Disabled -->
+        <div style="display:flex;flex-direction:column;gap:0.625rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Disabled</p>
+          <pith-file-upload disabled label="Upload disabled"></pith-file-upload>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── pith-skeleton ──────────────────────────────────── -->
+    <hr />
+    <section id="skeleton" class="section">
+      <p class="section-label">pith-skeleton</p>
+      <h2 class="section-title">Skeleton</h2>
+      <p class="section-desc">
+        Animated shimmer placeholder for loading states.
+        Three shape variants: <code>rect</code> (default), <code>text</code>, and <code>circle</code>.
+        Use <code>lines</code> for multi-line text placeholders. Respects <code>prefers-reduced-motion</code>.
+      </p>
+      <div class="demo-card" style="display:flex;flex-direction:column;gap:1.5rem">
+
+        <!-- Card placeholder -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Card placeholder</p>
+          <pith-skeleton height="120px"></pith-skeleton>
+        </div>
+
+        <!-- Avatar + text -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Avatar + text</p>
+          <div style="display:flex;align-items:flex-start;gap:0.75rem">
+            <pith-skeleton variant="circle" width="40px" height="40px"></pith-skeleton>
+            <div style="flex:1">
+              <pith-skeleton variant="text" lines="3"></pith-skeleton>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sizes -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Custom sizes</p>
+          <pith-skeleton width="80px" height="80px"></pith-skeleton>
+          <pith-skeleton width="200px" height="16px"></pith-skeleton>
+          <pith-skeleton variant="circle" width="56px" height="56px"></pith-skeleton>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── pith-alert ─────────────────────────────────────── -->
+    <hr />
+    <section id="alert" class="section">
+      <p class="section-label">pith-alert</p>
+      <h2 class="section-title">Alert</h2>
+      <p class="section-desc">
+        Inline status / callout message with automatic variant icons.
+        Add <code>dismissible</code> for a close button that fires <code>pith-dismiss</code>
+        and removes the element with a collapse animation.
+        Slot in a custom <code>icon</code> or a <code>title</code> to extend.
+      </p>
+      <div class="demo-card" style="display:flex;flex-direction:column;gap:0.75rem">
+
+        <pith-alert variant="info">Your session will expire in 10 minutes.</pith-alert>
+        <pith-alert variant="success">
+          <span slot="title">Changes saved</span>
+          Your profile has been updated successfully.
+        </pith-alert>
+        <pith-alert variant="warning" dismissible>
+          <span slot="title">Deprecation notice</span>
+          The <code>legacy-api</code> endpoint will be removed in v3.
+        </pith-alert>
+        <pith-alert variant="danger" dismissible>Payment method declined. Please update your billing details.</pith-alert>
+
+      </div>
+    </section>
+
+    <!-- ── pith-progress ──────────────────────────────────── -->
+    <hr />
+    <section id="progress" class="section">
+      <p class="section-label">pith-progress</p>
+      <h2 class="section-title">Progress</h2>
+      <p class="section-desc">
+        Linear progress bar. Set <code>value</code> (0–<code>max</code>) for a determinate bar,
+        or add <code>indeterminate</code> for an animated cycling bar when progress is unknown.
+        Three sizes, four color variants.
+      </p>
+      <div class="demo-card" style="display:flex;flex-direction:column;gap:1.25rem;max-width:32rem">
+
+        <!-- Determinate -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Determinate</p>
+          <pith-progress value="30"></pith-progress>
+          <pith-progress value="65" variant="success"></pith-progress>
+          <pith-progress value="45" variant="warning"></pith-progress>
+          <pith-progress value="80" variant="danger"></pith-progress>
+        </div>
+
+        <!-- Indeterminate -->
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Indeterminate</p>
+          <pith-progress indeterminate></pith-progress>
+          <pith-progress indeterminate variant="success"></pith-progress>
+        </div>
+
+        <!-- Sizes -->
+        <div style="display:flex;flex-direction:column;gap:0.625rem">
+          <p style="font-size:var(--text-xs,0.75rem);font-weight:var(--weight-semibold,600);text-transform:uppercase;letter-spacing:0.08em;color:var(--ui-text-subtle);margin:0">Sizes</p>
+          <pith-progress size="sm" value="55"></pith-progress>
+          <pith-progress size="md" value="55"></pith-progress>
+          <pith-progress size="lg" value="55"></pith-progress>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── pith-command ───────────────────────────────────── -->
+    <hr />
+    <section id="command" class="section">
+      <p class="section-label">pith-command · pith-command-item</p>
+      <h2 class="section-title">Command Palette</h2>
+      <p class="section-desc">
+        Full-screen command palette overlay using the native <code>&lt;dialog&gt;</code> top layer.
+        Type to filter items live. Arrow keys navigate, Enter selects, Escape closes.
+        Items support <code>icon</code> and <code>shortcut</code> slots plus a <code>keywords</code>
+        attribute for extra search terms.
+        Fires <code>pith-select</code> with <code>{ value }</code>.
+      </p>
+      <div class="demo-card">
+        <pith-button variant="secondary" id="cmd-open-btn">
+          <svg slot="icon-start" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="4.5"/><path d="M10 10l2.5 2.5"/></svg>
+          Open Command Palette
+          <kbd slot="icon-end" style="font-family:var(--font-mono,monospace);font-size:0.7rem;opacity:0.6">⌘K</kbd>
+        </pith-button>
+      </div>
+    </section>
+
+    <!-- Command palette instance -->
+    <pith-command id="main-cmd" placeholder="Search commands…">
+      <pith-command-item value="new-file" keywords="create add">
+        <svg slot="icon" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="1" width="10" height="12" rx="1.5"/><line x1="5" y1="7" x2="9" y2="7"/><line x1="7" y1="5" x2="7" y2="9"/></svg>
+        New File
+        <kbd slot="shortcut" style="font-family:var(--font-mono,monospace);font-size:0.7rem">⌘N</kbd>
+      </pith-command-item>
+      <pith-command-item value="open-file" keywords="browse">
+        <svg slot="icon" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h4l1.5 2H12a1 1 0 011 1v4a1 1 0 01-1 1H2a1 1 0 01-1-1V5a1 1 0 011-1z"/></svg>
+        Open File
+        <kbd slot="shortcut" style="font-family:var(--font-mono,monospace);font-size:0.7rem">⌘O</kbd>
+      </pith-command-item>
+      <pith-command-item value="save" keywords="write">
+        <svg slot="icon" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 12H3a1 1 0 01-1-1V3a1 1 0 011-1h6.5L12 4.5V11a1 1 0 01-1 1z"/><rect x="4" y="8" width="6" height="4" rx="0.5"/><rect x="4.5" y="2" width="4" height="3" rx="0.5"/></svg>
+        Save
+        <kbd slot="shortcut" style="font-family:var(--font-mono,monospace);font-size:0.7rem">⌘S</kbd>
+      </pith-command-item>
+      <pith-command-item value="settings" keywords="preferences config">
+        <svg slot="icon" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7" cy="7" r="1.75"/><path d="M7 1v2M7 11v2M1 7h2M11 7h2M2.9 2.9l1.4 1.4M9.7 9.7l1.4 1.4M2.9 11.1l1.4-1.4M9.7 4.3l1.4-1.4"/></svg>
+        Settings
+        <kbd slot="shortcut" style="font-family:var(--font-mono,monospace);font-size:0.7rem">⌘,</kbd>
+      </pith-command-item>
+      <pith-command-item value="toggle-theme" keywords="dark light appearance theme">
+        <svg slot="icon" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="2.5"/><path d="M7 1v1.5M7 11.5V13M1 7h1.5M11.5 7H13"/></svg>
+        Toggle Theme
+      </pith-command-item>
+      <pith-command-item value="close-tab" keywords="exit close" disabled>
+        <svg slot="icon" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12"/></svg>
+        Close Tab (disabled)
+      </pith-command-item>
+    </pith-command>
+
+    <!-- ── Typography ─────────────────────────────────────── -->
+    <hr />
+    <section id="typography" class="section">
+      <p class="section-label">Typography</p>
+      <h2 class="section-title">Type Scale</h2>
+      <p class="section-desc">
+        All text in Pith inherits from the <code>--font-*</code>, <code>--text-*</code>,
+        <code>--weight-*</code>, and <code>--leading-*</code> design tokens.
+        Switch themes to see how the type system shifts — Brutal switches to a
+        monospace stack, Glass keeps the same sans-serif with wider radii.
+      </p>
+
+      <div class="demo-card" style="display:flex;flex-direction:column;gap:2rem">
+
+        <!-- Headings -->
+        <div>
+          <p class="typo-label">Headings</p>
+          <div style="display:flex;flex-direction:column;gap:1rem">
+            <div>
+              <span class="typo-tag">h1</span>
+              <p style="font-family:var(--font-sans,system-ui,sans-serif);font-size:var(--text-4xl,2.25rem);font-weight:var(--weight-bold,700);line-height:var(--leading-tight,1.25);color:var(--ui-text);letter-spacing:-0.025em;margin:0">The quick brown fox</p>
+            </div>
+            <div>
+              <span class="typo-tag">h2</span>
+              <p style="font-family:var(--font-sans,system-ui,sans-serif);font-size:var(--text-3xl,1.875rem);font-weight:var(--weight-bold,700);line-height:var(--leading-tight,1.25);color:var(--ui-text);letter-spacing:-0.02em;margin:0">Jumps over the lazy dog</p>
+            </div>
+            <div>
+              <span class="typo-tag">h3</span>
+              <p style="font-family:var(--font-sans,system-ui,sans-serif);font-size:var(--text-2xl,1.5rem);font-weight:var(--weight-semibold,600);line-height:var(--leading-snug,1.375);color:var(--ui-text);letter-spacing:-0.015em;margin:0">Accessible, themeable components</p>
+            </div>
+            <div>
+              <span class="typo-tag">h4</span>
+              <p style="font-family:var(--font-sans,system-ui,sans-serif);font-size:var(--text-xl,1.25rem);font-weight:var(--weight-semibold,600);line-height:var(--leading-snug,1.375);color:var(--ui-text);letter-spacing:-0.01em;margin:0">Built on Lit 3 and design tokens</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Body text -->
+        <div>
+          <p class="typo-label">Body &amp; Muted</p>
+          <div style="display:flex;flex-direction:column;gap:0.75rem">
+            <p style="font-family:var(--font-sans,system-ui,sans-serif);font-size:var(--text-base,1rem);font-weight:var(--weight-regular,400);line-height:var(--leading-relaxed,1.625);color:var(--ui-text);margin:0">Regular body text. Pith components read from cascaded <code style="font-family:var(--font-mono,monospace);font-size:0.875em;background:var(--ui-surface-overlay);border-radius:var(--ui-radius-xs,2px);padding:0.1em 0.35em">--ui-*</code> tokens — changing <code style="font-family:var(--font-mono,monospace);font-size:0.875em;background:var(--ui-surface-overlay);border-radius:var(--ui-radius-xs,2px);padding:0.1em 0.35em">data-theme</code> on any ancestor is all it takes to restyle every descendant component simultaneously.</p>
+            <p style="font-family:var(--font-sans,system-ui,sans-serif);font-size:var(--text-sm,0.875rem);font-weight:var(--weight-regular,400);line-height:var(--leading-relaxed,1.625);color:var(--ui-text-muted);margin:0">Muted — supporting copy, captions, and secondary information. Uses <code style="font-family:var(--font-mono,monospace);font-size:0.875em">--ui-text-muted</code>.</p>
+            <p style="font-family:var(--font-sans,system-ui,sans-serif);font-size:var(--text-xs,0.75rem);font-weight:var(--weight-regular,400);line-height:var(--leading-relaxed,1.625);color:var(--ui-text-subtle);margin:0">Subtle — labels, timestamps, metadata. Uses <code style="font-family:var(--font-mono,monospace);font-size:0.875em">--ui-text-subtle</code>.</p>
+          </div>
+        </div>
+
+        <!-- Blockquote -->
+        <div>
+          <p class="typo-label">Blockquote</p>
+          <blockquote style="margin:0;padding:0.75rem 1.25rem;border-left:3px solid var(--ui-primary);background:var(--ui-surface-raised);border-radius:0 var(--ui-radius,6px) var(--ui-radius,6px) 0">
+            <p style="font-family:var(--font-sans,system-ui,sans-serif);font-size:var(--text-base,1rem);font-style:italic;line-height:var(--leading-relaxed,1.625);color:var(--ui-text-muted);margin:0 0 0.375rem">Design is not just what it looks like and feels like. Design is how it works.</p>
+            <cite style="font-family:var(--font-sans,system-ui,sans-serif);font-size:var(--text-sm,0.875rem);font-style:normal;font-weight:var(--weight-medium,500);color:var(--ui-text-subtle)">— Steve Jobs</cite>
+          </blockquote>
+        </div>
+
+        <!-- Code -->
+        <div>
+          <p class="typo-label">Code &amp; Preformatted</p>
+          <div style="display:flex;flex-direction:column;gap:0.75rem">
+            <p style="font-family:var(--font-sans,system-ui,sans-serif);font-size:var(--text-base,1rem);color:var(--ui-text);margin:0">Install with <code style="font-family:var(--font-mono,monospace);font-size:0.875em;font-weight:var(--weight-medium,500);background:var(--ui-surface-overlay);border:var(--ui-border-width,1px) solid var(--ui-border);border-radius:var(--ui-radius-xs,2px);padding:0.15em 0.4em;color:var(--ui-text)">npm install @pith/ui</code> then import any component.</p>
+            <pre style="margin:0;padding:1rem 1.25rem;background:var(--ui-surface-sunken);border:var(--ui-border-width,1px) solid var(--ui-border);border-radius:var(--ui-radius,6px);overflow-x:auto"><code style="all:unset;font-family:var(--font-mono,monospace);font-size:var(--text-sm,0.875rem);line-height:1.7;color:var(--ui-text-muted)">import '@pith/ui'
+
+&lt;pith-button variant="primary"&gt;Save&lt;/pith-button&gt;
+&lt;pith-input  label="Email" type="email" required&gt;&lt;/pith-input&gt;
+&lt;pith-slider label="Volume" value="60" show-buttons&gt;&lt;/pith-slider&gt;</code></pre>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <hr />
+    <section id="install" class="section">
+      <h2 class="section-title">Install</h2>
+      <p class="section-desc">Works in any framework — or no framework at all.</p>
+      <div class="demo-card">
+        <pre style="font-family: var(--font-mono, monospace); font-size: 0.8125rem; color: var(--ui-text-muted); line-height: 1.8; overflow-x: auto;"><code style="all: unset;">npm install @pith/ui lit
+
+<span style="color: var(--ui-text-subtle);"><!-- or via CDN, no install --></span>
+&lt;link rel="stylesheet" href="https://esm.sh/@pith/ui/styles" /&gt;
+&lt;script type="module" src="https://esm.sh/@pith/ui"&gt;&lt;/script&gt;
+
+&lt;body data-theme="brutal"&gt;
+  &lt;pith-button variant="primary"&gt;Hello world&lt;/pith-button&gt;
+&lt;/body&gt;</code></pre>
+      </div>
+    </section>
+
+    <footer>
+      <span>pith v0.1.0 — Web Components · A11y-first · Container-query-driven</span>
+      <span>Three themes: <strong>Ink</strong> · <strong>Glass</strong> · <strong>Brutal</strong></span>
+    </footer>
+
+        </div><!-- /.content-body -->
+      </main><!-- /.content -->
+    </div><!-- /.shell -->
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

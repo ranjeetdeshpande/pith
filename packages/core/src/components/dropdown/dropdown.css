@@ -1,0 +1,101 @@
+/* ═══════════════════════════════════════════════════════════
+   pith-dropdown — Shadow DOM styles
+   ═══════════════════════════════════════════════════════════ */
+
+:host {
+  display: inline-block;
+  position: relative;
+}
+
+/* ── Trigger wrapper ─────────────────────────────────────── */
+.trigger-wrapper {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ── Dropdown panel ──────────────────────────────────────── */
+.panel {
+  position: absolute;
+  z-index: var(--z-dropdown, 50);
+  min-width: max(100%, 11rem);
+  padding: 4px;
+  background: var(--ui-surface-raised);
+  border: var(--ui-border-width, 1px) solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  box-shadow: var(--ui-shadow);
+  max-height: min(18rem, 60vh);
+  overflow-y: auto;
+  /* Hidden state */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-6px) scale(0.98);
+  transform-origin: top center;
+  transition:
+    opacity     140ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    transform   140ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    visibility  0s    linear 140ms;
+}
+
+.panel.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity     140ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    transform   140ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    visibility  0s    linear 0ms;
+}
+
+/* ── Placement variants ──────────────────────────────────── */
+.placement-bottom-start { top: calc(100% + 6px); left: 0; }
+.placement-bottom-end   { top: calc(100% + 6px); right: 0; }
+.placement-top-start    { bottom: calc(100% + 6px); left: 0; transform-origin: bottom center; }
+.placement-top-end      { bottom: calc(100% + 6px); right: 0; transform-origin: bottom center; }
+
+/* Top placements: slide down when appearing (reverse direction) */
+.placement-top-start.is-open,
+.placement-top-end.is-open {
+  transform: translateY(0) scale(1);
+}
+
+.placement-top-start:not(.is-open),
+.placement-top-end:not(.is-open) {
+  transform: translateY(6px) scale(0.98);
+}
+
+/* ── Brutal theme ────────────────────────────────────────── */
+:host-context([data-theme="brutal"]) .panel {
+  border-radius: 0;
+  border: 2px solid var(--ui-border);
+  box-shadow: var(--ui-shadow);
+  transform-origin: top left;
+}
+
+/* No scale — just slide in brutal */
+:host-context([data-theme="brutal"]) .panel:not(.is-open) {
+  transform: translateY(-4px);
+}
+
+:host-context([data-theme="brutal"]) .panel.is-open {
+  transform: translateY(0);
+}
+
+/* ── Glass theme ─────────────────────────────────────────── */
+:host-context([data-theme="glass"]) .panel {
+  backdrop-filter: var(--ui-backdrop);
+  -webkit-backdrop-filter: var(--ui-backdrop);
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    transition: opacity 100ms ease, visibility 0s linear 100ms;
+    transform: none !important;
+  }
+
+  .panel.is-open {
+    transition: opacity 100ms ease, visibility 0s linear 0ms;
+  }
+}

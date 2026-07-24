@@ -1,0 +1,51 @@
+/* ═══════════════════════════════════════════════════════════
+   pith-tab-panel — Shadow DOM styles
+   Content region associated with a pith-tab.
+   ═══════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+}
+
+[role="tabpanel"] {
+  padding-top: 1.25rem;
+  color: var(--ui-text);
+  outline: none;
+}
+
+/* Panels fade in when they become visible */
+[role="tabpanel"]:not([hidden]) {
+  animation: panel-in 200ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[role="tabpanel"]:focus-visible {
+  outline: 2px solid var(--ui-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--ui-radius-xs);
+}
+
+/* ════════════════════════════════════════════════════════════
+   BRUTAL THEME — no fade animation, instant
+   ════════════════════════════════════════════════════════════ */
+
+:host-context([data-theme="brutal"]) [role="tabpanel"]:not([hidden]) {
+  animation: none;
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  [role="tabpanel"]:not([hidden]) {
+    animation: none !important;
+  }
+}

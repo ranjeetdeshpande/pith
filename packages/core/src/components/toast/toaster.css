@@ -1,0 +1,236 @@
+/* Toaster host: fixed overlay in the bottom-right corner */
+:host {
+  display: block;
+  position: fixed;
+  bottom: var(--space-6, 1.5rem);
+  right:  var(--space-6, 1.5rem);
+  z-index: var(--z-toast, 200);
+  pointer-events: none;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--space-2, 0.5rem);
+  align-items: flex-end;
+}
+
+/* ── Individual toast ── */
+.toast {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-5, 0.625rem);
+  min-width: 18rem;
+  max-width: 24rem;
+  padding: 0.75rem 0.75rem 0.75rem 0.875rem;
+  border-radius: 14px;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: var(--weight-medium, 500);
+  line-height: 1.4;
+  pointer-events: all;
+  overflow: hidden;
+  isolation: isolate;
+  /* Always-dark surface — readable on any page theme */
+  background-color: #18181d;
+  color: #e8e8f0;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.07),
+    0 8px 24px rgba(0, 0, 0, 0.45),
+    0 2px 6px  rgba(0, 0, 0, 0.3);
+  animation: pith-toast-in 420ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.toast.removing {
+  animation: pith-toast-out 160ms ease-in forwards;
+  pointer-events: none;
+}
+
+/* ── Variant icon tints ── */
+.icon { color: #7c7c8a; line-height: 0; flex-shrink: 0; }
+.toast.success .icon { color: #4ade80; }
+.toast.warning .icon { color: #fbbf24; }
+.toast.danger  .icon { color: #f87171; }
+.toast.info    .icon { color: #818cf8; }
+
+/* ── Message ── */
+.message {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Close button ── */
+.close {
+  all: unset;
+  cursor: pointer;
+  line-height: 0;
+  flex-shrink: 0;
+  padding: 4px;
+  border-radius: 6px;
+  color: #7c7c8a;
+  transition: color 80ms ease, background-color 80ms ease;
+
+  &:hover {
+    color: #e8e8f0;
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.45);
+    outline-offset: 1px;
+    color: #e8e8f0;
+  }
+}
+
+/* ── Time-remaining progress bar ── */
+.progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.18);
+  transform-origin: left center;
+  animation: pith-progress var(--_duration, 4000ms) linear forwards;
+}
+.toast.success .progress { background: rgba( 74, 222, 128, 0.55); }
+.toast.warning .progress { background: rgba(251, 191,  36, 0.55); }
+.toast.danger  .progress { background: rgba(248, 113, 113, 0.55); }
+.toast.info    .progress { background: rgba(129, 140, 248, 0.55); }
+
+/* ── Animations ── */
+@keyframes pith-toast-in {
+  0%   { opacity: 0; transform: translateX(calc(100% + 1rem)) scale(0.85); }
+  60%  { opacity: 1; }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes pith-toast-out {
+  to { opacity: 0; transform: translateX(calc(100% + 0.5rem)); }
+}
+
+@keyframes pith-progress {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none; opacity: 1; transform: none; }
+  .progress { animation: none; display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast              { animation: none; }
+  .toast.removing     { display: none;   }
+}
+
+/* ── Brutal theme override ───────────────────────────────────
+   Square corners, hard offset shadow, themed surface.
+   ─────────────────────────────────────────────────────────── */
+:host-context([data-theme="brutal"]) .toast {
+  background-color: var(--ui-surface-raised);
+  color: var(--ui-text);
+  border-radius: 0;
+  border: 2px solid var(--ui-border);
+  box-shadow: var(--ui-shadow);
+}
+
+:host-context([data-theme="brutal"]) .icon {
+  color: var(--ui-text-muted);
+}
+
+:host-context([data-theme="brutal"]) .toast.success .icon { color: var(--ui-success); }
+:host-context([data-theme="brutal"]) .toast.warning .icon { color: var(--ui-warning); }
+:host-context([data-theme="brutal"]) .toast.danger  .icon { color: var(--ui-danger); }
+:host-context([data-theme="brutal"]) .toast.info    .icon { color: var(--ui-primary); }
+
+:host-context([data-theme="brutal"]) .close {
+  color: var(--ui-text-muted);
+  border-radius: 0;
+
+  &:hover {
+    color: var(--ui-text);
+    background-color: var(--ui-surface-overlay);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--ui-focus-ring);
+    outline-offset: 1px;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   GLASS THEME — frosted dark toast with top-rim highlight
+   The toast stays dark-surface (white text) in all glass modes;
+   backdrop-filter gives the frosted refraction effect.
+   ════════════════════════════════════════════════════════════ */
+
+:host-context([data-theme="glass"]) .toast {
+  background: rgba(12, 12, 22, 0.75);
+  backdrop-filter: var(--ui-backdrop);
+  -webkit-backdrop-filter: var(--ui-backdrop);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),   /* top rim */
+    0 0 0 1px rgba(255, 255, 255, 0.10),        /* edge ring */
+    0 8px 32px rgba(0, 0, 0, 0.38);             /* depth */
+  /* keep text and icon colours from the base dark palette */
+}
+
+:host-context([data-theme="glass"]) .close:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+:host-context([data-theme="brutal"]) .progress {
+  background: var(--ui-text-subtle);
+  opacity: 0.4;
+}
+:host-context([data-theme="brutal"]) .toast.success .progress { background: var(--ui-success); opacity: 0.5; }
+:host-context([data-theme="brutal"]) .toast.warning .progress { background: var(--ui-warning); opacity: 0.5; }
+:host-context([data-theme="brutal"]) .toast.danger  .progress { background: var(--ui-danger);  opacity: 0.5; }
+:host-context([data-theme="brutal"]) .toast.info    .progress { background: var(--ui-primary); opacity: 0.5; }
+
+/* ── Glass theme override ────────────────────────────────────
+   Frosted panel: backdrop-filter + theme surface/border/text.
+   ─────────────────────────────────────────────────────────── */
+:host-context([data-theme="glass"]) .toast {
+  background-color: var(--ui-surface-raised);
+  color: var(--ui-text);
+  border: 1px solid var(--ui-border);
+  border-radius: 14px;
+  backdrop-filter: var(--ui-backdrop);
+  -webkit-backdrop-filter: var(--ui-backdrop);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.18),
+    0 0 0 1px var(--ui-border);
+}
+
+:host-context([data-theme="glass"]) .icon {
+  color: var(--ui-text-muted);
+}
+
+:host-context([data-theme="glass"]) .toast.success .icon { color: var(--ui-success); }
+:host-context([data-theme="glass"]) .toast.warning .icon { color: var(--ui-warning); }
+:host-context([data-theme="glass"]) .toast.danger  .icon { color: var(--ui-danger); }
+:host-context([data-theme="glass"]) .toast.info    .icon { color: var(--ui-primary); }
+
+:host-context([data-theme="glass"]) .close {
+  color: var(--ui-text-muted);
+
+  &:hover {
+    color: var(--ui-text);
+    background-color: var(--ui-surface-overlay);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--ui-focus-ring);
+    outline-offset: 1px;
+  }
+}
+
+:host-context([data-theme="glass"]) .progress {
+  background: var(--ui-border);
+}
+:host-context([data-theme="glass"]) .toast.success .progress { background: var(--ui-success); opacity: 0.55; }
+:host-context([data-theme="glass"]) .toast.warning .progress { background: var(--ui-warning); opacity: 0.55; }
+:host-context([data-theme="glass"]) .toast.danger  .progress { background: var(--ui-danger);  opacity: 0.55; }
+:host-context([data-theme="glass"]) .toast.info    .progress { background: var(--ui-primary); opacity: 0.55; }

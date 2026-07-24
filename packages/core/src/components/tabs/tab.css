@@ -1,0 +1,92 @@
+/* ═══════════════════════════════════════════════════════════
+   pith-tab — Shadow DOM styles
+   Individual tab trigger. All visual state via attributes
+   set by the parent pith-tabs container.
+   ═══════════════════════════════════════════════════════════ */
+
+:host {
+  display: inline-flex;
+  /* Ensure tab text/icon sits above the .indicator drawn in pith-tabs shadow DOM */
+  position: relative;
+  z-index: 1;
+}
+
+:host([disabled]) {
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+/* ── Tab button ──────────────────────────────────────────── */
+.item {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: var(--weight-medium, 500);
+  color: var(--ui-text-muted);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  white-space: nowrap;
+  transition: color 150ms ease;
+}
+
+.item:hover {
+  color: var(--ui-text);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--ui-focus-ring);
+  outline-offset: -2px;
+  border-radius: var(--ui-radius-xs);
+}
+
+/* ── Active — color only; the visual bar/pill is drawn by parent ── */
+:host([active]) .item {
+  color: var(--ui-text);
+}
+
+/* ── Pills variant ───────────────────────────────────────── */
+/* data-variant is set directly on each pith-tab by the parent pith-tabs._sync().
+   This avoids :host-context() which is unsupported in Firefox / Safari. */
+:host([data-variant="pills"]) .item {
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--ui-radius-sm);
+}
+
+/* ════════════════════════════════════════════════════════════
+   BRUTAL THEME
+   ════════════════════════════════════════════════════════════ */
+/* Progressive enhancement: Chrome / Chromium only.
+   On Firefox/Safari tabs remain sans-serif — functional, not broken. */
+:host-context([data-theme="brutal"]) .item {
+  font-family: var(--font-mono, monospace);
+  letter-spacing: -0.02em;
+  border-radius: 0;
+}
+
+/* Pills active — use the theme-supplied indicator foreground (brutal: --ui-primary-fg;
+   other themes fall back to --ui-text so behaviour is unchanged).            */
+:host([data-variant="pills"][active]) .item {
+  color: var(--ui-indicator-fg, var(--ui-text));
+}
+
+/* Brutal pills — active tab text must invert to read on the primary-colour fill.
+   data-variant is set by JS so this works in Firefox/Safari too.              */
+:host-context([data-theme="brutal"])[data-variant="pills"][active] .item {
+  color: var(--ui-primary-fg);
+  /* Light brutal: white text (#fff) on black indicator (#0a0a0a) ✓
+     Dark  brutal: black text (#000) on white indicator (#fff)    ✓ */
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .item {
+    transition: none !important;
+  }
+}
+

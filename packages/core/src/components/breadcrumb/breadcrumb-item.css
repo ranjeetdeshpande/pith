@@ -1,0 +1,179 @@
+/* ═══════════════════════════════════════════════════════════
+   pith-breadcrumb-item — Shadow DOM styles
+   ═══════════════════════════════════════════════════════════ */
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  font-size: inherit;
+  /* Note: no `border` on :host so pith-breadcrumb's ::slotted()
+     can freely add styling if needed. */
+}
+
+/* ── Separator ───────────────────────────────────────────── */
+/*    Rendered inside shadow DOM; hidden for the first item   */
+/*    via :host(:first-child). The separator comes BEFORE the */
+/*    link content so DOM order matches visual reading order. */
+
+.sep {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0 0.3rem;
+  color: var(--ui-text-subtle);
+  user-select: none;
+  line-height: 0;
+  transition: color 300ms ease;
+}
+
+/* Hide on the first breadcrumb item */
+:host(:first-child) .sep {
+  display: none;
+}
+
+/* SVG chevron — Ink and Glass */
+.sep-icon {
+  display: block;
+}
+
+/* Text separator — Brutal only */
+.sep-text {
+  display: none;
+  font-family: var(--font-mono, monospace);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: var(--weight-bold, 700);
+  line-height: 1;
+}
+
+/* ── Link / current item ─────────────────────────────────── */
+
+.link {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.125rem 0.3rem;
+  border-radius: var(--ui-radius-sm);
+  font-size: inherit;
+  font-weight: var(--weight-regular, 400);
+  color: var(--ui-text-muted);
+  line-height: var(--leading-snug, 1.375);
+  white-space: nowrap;
+  transition:
+    color            150ms ease,
+    background-color 150ms ease;
+}
+
+/* ── Anchor (interactive) items ──────────────────────────── */
+
+a.link {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+a.link:hover {
+  color: var(--ui-text);
+  background: var(--ui-surface-overlay);
+}
+
+a.link:focus-visible {
+  outline: 2px solid var(--ui-focus-ring);
+  outline-offset: 1px;
+  color: var(--ui-text);
+  background: var(--ui-surface-overlay);
+}
+
+/* ── Current page item ───────────────────────────────────── */
+
+.link.current {
+  color: var(--ui-text);
+  font-weight: var(--weight-medium, 500);
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ── Disabled (non-current, no href) ─────────────────────── */
+
+:host([disabled]) .link {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ════════════════════════════════════════════════════════════
+   BRUTAL THEME
+   Monospace bold · inverted current pill · text separator
+   ════════════════════════════════════════════════════════════ */
+
+:host-context([data-theme="brutal"]) .link {
+  font-family: var(--font-mono, monospace);
+  font-weight: var(--weight-bold, 700);
+  letter-spacing: -0.02em;
+  border-radius: 0;
+}
+
+:host-context([data-theme="brutal"]) a.link:hover {
+  background: var(--ui-primary);
+  color: var(--ui-primary-fg);
+}
+
+:host-context([data-theme="brutal"]) a.link:focus-visible {
+  background: var(--ui-primary);
+  color: var(--ui-primary-fg);
+  outline: 2px solid var(--ui-focus-ring);
+  outline-offset: 0px;
+}
+
+/* Brutal current: inverted hard pill */
+:host-context([data-theme="brutal"]) .link.current {
+  background: var(--ui-primary);
+  color: var(--ui-primary-fg);
+  font-weight: var(--weight-bold, 700);
+  padding: 0.125rem 0.5rem;
+  box-shadow: var(--ui-shadow-xs);
+}
+
+/* Swap chevron → slash separator */
+:host-context([data-theme="brutal"]) .sep-icon {
+  display: none;
+}
+
+:host-context([data-theme="brutal"]) .sep-text {
+  display: block;
+}
+
+/* ════════════════════════════════════════════════════════════
+   GLASS THEME
+   Frosted current pill · glowing focus ring
+   ════════════════════════════════════════════════════════════ */
+
+/* Glass current item: frosted glass badge */
+:host-context([data-theme="glass"]) .link.current {
+  background: var(--ui-surface-raised);
+  border: 1px solid var(--ui-border);
+  backdrop-filter: var(--ui-backdrop);
+  -webkit-backdrop-filter: var(--ui-backdrop);
+  font-weight: var(--weight-medium, 500);
+}
+
+/* Glass hover: frosted overlay */
+:host-context([data-theme="glass"]) a.link:hover {
+  background: var(--ui-surface-overlay);
+  backdrop-filter: var(--ui-backdrop);
+  -webkit-backdrop-filter: var(--ui-backdrop);
+}
+
+/* Glass separator: use text-subtle so it reads on both light
+   and dark glass pages (border-strong is white on white = invisible). */
+:host-context([data-theme="glass"]) .sep {
+  color: var(--ui-text-subtle);
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .link,
+  .sep {
+    transition: none;
+  }
+}

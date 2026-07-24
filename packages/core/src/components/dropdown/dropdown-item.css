@@ -1,0 +1,96 @@
+/* ═══════════════════════════════════════════════════════════
+   pith-dropdown-item — Shadow DOM styles
+   ═══════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+}
+
+/* Optional top separator */
+:host([divider]) {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: var(--ui-border-width, 1px) solid var(--ui-border);
+  transition: border-color 300ms ease;
+}
+
+:host([disabled]) {
+  pointer-events: none;
+}
+
+/* ── Menu item button ────────────────────────────────────── */
+.item {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--ui-radius-sm);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: var(--weight-medium, 500);
+  line-height: 1.4;
+  color: var(--ui-text);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    background-color 100ms ease,
+    color 100ms ease;
+}
+
+.item:hover {
+  background: var(--ui-surface-overlay);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--ui-focus-ring, #6366f1);
+  outline-offset: -2px;
+  background: var(--ui-surface-overlay);
+}
+
+.item:disabled,
+:host([disabled]) .item {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Danger variant ──────────────────────────────────────── */
+.item.danger {
+  color: var(--ui-danger);
+}
+
+.item.danger:hover {
+  background: var(--ui-danger-subtle);
+}
+
+/* ── Icon slot ───────────────────────────────────────────── */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  line-height: 0;
+  color: var(--ui-text-muted);
+  transition: color 100ms ease;
+}
+
+.icon.is-empty {
+  display: none;
+}
+
+/* Danger icon tint */
+.item.danger .icon {
+  color: var(--ui-danger);
+}
+
+/* ── Brutal theme ────────────────────────────────────────── */
+:host-context([data-theme="brutal"]) .item {
+  border-radius: 0;
+}
+
+:host-context([data-theme="brutal"]) .item:focus-visible {
+  outline-offset: -2px;
+  outline: 2px solid var(--ui-focus-ring);
+}

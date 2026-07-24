@@ -1,0 +1,172 @@
+/* ═══════════════════════════════════════════════════════════
+   pith-input — Shadow DOM styles
+   Form-associated input with label, error, hint, and size variants.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Host & size tokens ──────────────────────────────────── */
+:host {
+  display: block;
+  /* md defaults */
+  --_fs:  var(--text-sm, 0.875rem);
+  --_h:   2.25rem;
+  --_py:  0.5rem;
+  --_px:  0.75rem;
+}
+
+:host([size="sm"]) {
+  --_fs:  var(--text-xs, 0.75rem);
+  --_h:   1.875rem;
+  --_py:  0.375rem;
+  --_px:  0.625rem;
+}
+
+:host([size="lg"]) {
+  --_fs:  var(--text-base, 1rem);
+  --_h:   2.75rem;
+  --_py:  0.625rem;
+  --_px:  1rem;
+}
+
+:host([disabled]) {
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+/* ── Root layout ─────────────────────────────────────────── */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+/* ── Label ───────────────────────────────────────────────── */
+.label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.2em;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: var(--weight-medium, 500);
+  color: var(--ui-text);
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Required asterisk */
+.req {
+  color: var(--ui-danger);
+  font-weight: var(--weight-bold, 700);
+  font-size: 0.9em;
+}
+
+/* ── Control wrapper ─────────────────────────────────────── */
+.control {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  border: var(--ui-border-width, 1px) solid var(--ui-border);
+  border-radius: var(--ui-radius, 6px);
+  background: var(--ui-surface);
+  transition:
+    border-color 150ms ease,
+    box-shadow   150ms ease;
+  overflow: hidden; /* clip focus ring on rounded corners */
+}
+
+.control:focus-within {
+  border-color: var(--ui-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-focus-ring) 22%, transparent);
+}
+
+/* ════════════════════════════════════════════════════════════
+   GLASS THEME — frosted transparent input surface
+   ════════════════════════════════════════════════════════════ */
+
+:host-context([data-theme="glass"]) .control {
+  background: rgba(255, 255, 255, 0.08);
+  /* Indigo-tinted border — readable on light AND dark glass pages */
+  border-color: rgba(149, 152, 255, 0.40);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  backdrop-filter: var(--ui-backdrop);
+  -webkit-backdrop-filter: var(--ui-backdrop);
+}
+
+:host-context([data-theme="glass"]) .control:focus-within {
+  border-color: rgba(149, 152, 255, 0.62);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 0 0 3px rgba(99, 102, 241, 0.14),
+    0 0 20px rgba(99, 102, 241, 0.10);
+}
+
+.control.is-error {
+  border-color: var(--ui-danger);
+}
+
+.control.is-error:focus-within {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-danger) 18%, transparent);
+}
+
+/* ── Input ───────────────────────────────────────────────── */
+.input {
+  all: unset;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  height: var(--_h);
+  padding: var(--_py) var(--_px);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: var(--_fs);
+  font-weight: var(--weight-regular, 400);
+  line-height: 1;
+  color: var(--ui-text);
+  background: transparent;
+  caret-color: var(--ui-primary);
+}
+
+.input::placeholder {
+  color: var(--ui-text-subtle);
+}
+
+/* Number: remove browser spin buttons */
+.input[type="number"]::-webkit-inner-spin-button,
+.input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+.input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+
+/* Search: remove clear button */
+.input[type="search"]::-webkit-search-cancel-button { display: none; }
+
+/* ── Messages (error / hint) ─────────────────────────────── */
+.message {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: var(--text-xs, 0.75rem);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.message.is-error { color: var(--ui-danger); }
+.message.is-hint  { color: var(--ui-text-muted); }
+
+/* ══ Brutal overrides ════════════════════════════════════
+   Square corners, thick border, hard focus shadow (Chrome/Edge only).
+   ════════════════════════════════════════════════════════ */
+:host-context([data-theme="brutal"]) .control:focus-within {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 1px;
+  box-shadow: var(--ui-shadow-sm);
+}
+
+:host-context([data-theme="brutal"]) .label,
+:host-context([data-theme="brutal"]) .message {
+  font-family: var(--font-mono, monospace);
+  letter-spacing: -0.02em;
+}
+
+/* ── Motion ──────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .control { transition: none !important; }
+}

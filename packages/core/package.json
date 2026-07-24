@@ -1,0 +1,93 @@
+{
+  "name": "@pith/ui",
+  "version": "0.1.0",
+  "description": "Web Components with three visual personalities. A11y-first, container-query-driven.",
+  "type": "module",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./components/accordion":   { "types": "./dist/components/accordion/index.d.ts",   "import": "./dist/components/accordion/index.js"   },
+    "./components/alert":       { "types": "./dist/components/alert/index.d.ts",       "import": "./dist/components/alert/index.js"       },
+    "./components/avatar":      { "types": "./dist/components/avatar/index.d.ts",      "import": "./dist/components/avatar/index.js"      },
+    "./components/badge":       { "types": "./dist/components/badge/index.d.ts",       "import": "./dist/components/badge/index.js"       },
+    "./components/breadcrumb":  { "types": "./dist/components/breadcrumb/index.d.ts",  "import": "./dist/components/breadcrumb/index.js"  },
+    "./components/button":      { "types": "./dist/components/button/index.d.ts",      "import": "./dist/components/button/index.js"      },
+    "./components/card":        { "types": "./dist/components/card/index.d.ts",        "import": "./dist/components/card/index.js"        },
+    "./components/checkbox":    { "types": "./dist/components/checkbox/index.d.ts",    "import": "./dist/components/checkbox/index.js"    },
+    "./components/command":     { "types": "./dist/components/command/index.d.ts",     "import": "./dist/components/command/index.js"     },
+    "./components/counter":     { "types": "./dist/components/counter/index.d.ts",     "import": "./dist/components/counter/index.js"     },
+    "./components/drawer":      { "types": "./dist/components/drawer/index.d.ts",      "import": "./dist/components/drawer/index.js"      },
+    "./components/dropdown":    { "types": "./dist/components/dropdown/index.d.ts",    "import": "./dist/components/dropdown/index.js"    },
+    "./components/file-upload": { "types": "./dist/components/file-upload/index.d.ts", "import": "./dist/components/file-upload/index.js" },
+    "./components/input":       { "types": "./dist/components/input/index.d.ts",       "import": "./dist/components/input/index.js"       },
+    "./components/magnetic":    { "types": "./dist/components/magnetic/index.d.ts",    "import": "./dist/components/magnetic/index.js"    },
+    "./components/modal":       { "types": "./dist/components/modal/index.d.ts",       "import": "./dist/components/modal/index.js"       },
+    "./components/option-card": { "types": "./dist/components/option-card/index.d.ts", "import": "./dist/components/option-card/index.js" },
+    "./components/progress":    { "types": "./dist/components/progress/index.d.ts",    "import": "./dist/components/progress/index.js"    },
+    "./components/select":      { "types": "./dist/components/select/index.d.ts",      "import": "./dist/components/select/index.js"      },
+    "./components/sidebar":     { "types": "./dist/components/sidebar/index.d.ts",     "import": "./dist/components/sidebar/index.js"     },
+    "./components/skeleton":    { "types": "./dist/components/skeleton/index.d.ts",    "import": "./dist/components/skeleton/index.js"    },
+    "./components/slider":      { "types": "./dist/components/slider/index.d.ts",      "import": "./dist/components/slider/index.js"      },
+    "./components/spinner":     { "types": "./dist/components/spinner/index.d.ts",     "import": "./dist/components/spinner/index.js"     },
+    "./components/switch":      { "types": "./dist/components/switch/index.d.ts",      "import": "./dist/components/switch/index.js"      },
+    "./components/tabs":        { "types": "./dist/components/tabs/index.d.ts",        "import": "./dist/components/tabs/index.js"        },
+    "./components/toast":       { "types": "./dist/components/toast/index.d.ts",       "import": "./dist/components/toast/index.js"       },
+    "./components/tooltip":     { "types": "./dist/components/tooltip/index.d.ts",     "import": "./dist/components/tooltip/index.js"     },
+    "./components/typewriter":  { "types": "./dist/components/typewriter/index.d.ts",  "import": "./dist/components/typewriter/index.js"  }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "sideEffects": [
+    "*.css",
+    "./dist/index.js"
+  ],
+  "scripts": {
+    "build": "vite build && pnpm build:css",
+    "build:css": "node scripts/build-css.mjs",
+    "dev": "vite build --watch",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "pnpm build"
+  },
+  "keywords": [
+    "web-components",
+    "ui",
+    "lit",
+    "accessible",
+    "a11y",
+    "animations",
+    "container-queries",
+    "themes",
+    "design-system"
+  ],
+  "author": "Ranjeet Deshpande",
+  "license": "MIT",
+  "homepage": "https://github.com/ranjeetdeshpande/pith#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ranjeetdeshpande/pith.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/ranjeetdeshpande/pith/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "lit": ">=3.0.0"
+  },
+  "devDependencies": {
+    "lit": "^3.2.0",
+    "vite": "^5.4.0",
+    "vite-plugin-dts": "^4.0.0",
+    "typescript": "^5.5.0"
+  }
+}

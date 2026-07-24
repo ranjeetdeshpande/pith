@@ -1,0 +1,43 @@
+/* ═══════════════════════════════════════════════════════════
+   pith-magnetic — Shadow DOM styles
+   ─────────────────────────────────────────────────────────
+   No visual chrome. The .inner wrapper is the sole transform
+   target. All translate values are driven by JS RAF via
+   inline style — CSS transitions are suppressed while the
+   RAF loop holds the '.tracking' class on the host.
+   CSS transition only fires on the very last frame when the
+   inline style is cleared; by then currentX/Y ≈ 0, so the
+   snap-back is imperceptible across all themes.
+   ═══════════════════════════════════════════════════════════ */
+
+:host {
+  display: inline-block;
+  overflow: visible; /* translated child can escape layout bounds */
+}
+
+:host([disabled]) {
+  pointer-events: none;
+}
+
+/* ── Inner transform target ──────────────────────────────── */
+.inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform; /* promote GPU layer */
+  transition: transform 500ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+/* JS RAF is running — disable CSS transition to avoid fighting inline style */
+:host(.tracking) .inner {
+  transition: none;
+}
+
+/* ── Reduced motion: kill the effect entirely ────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .inner {
+    transform: none !important;
+    transition: none !important;
+    will-change: auto;
+  }
+}

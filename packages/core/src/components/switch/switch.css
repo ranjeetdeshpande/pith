@@ -1,0 +1,183 @@
+/* ═══════════════════════════════════════════════════════════
+   pith-switch — Shadow DOM styles
+   Toggle switch for binary on/off states.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Size tokens (component-scoped custom properties) ─────── */
+:host {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  /* md defaults */
+  --_track-w:   2.75rem;   /* 44px */
+  --_track-h:   1.5rem;    /* 24px */
+  --_thumb-sz:  1rem;      /* 16px */
+  --_thumb-gap: 0.25rem;   /*  4px — breathing room on each side */
+}
+
+:host([size="sm"]) {
+  --_track-w:   1.75rem;   /* 28px */
+  --_track-h:   1rem;      /* 16px */
+  --_thumb-sz:  0.625rem;  /* 10px */
+  --_thumb-gap: 0.1875rem; /*  3px */
+}
+
+:host([size="lg"]) {
+  --_track-w:   3.5rem;    /* 56px */
+  --_track-h:   1.875rem;  /* 30px */
+  --_thumb-sz:  1.375rem;  /* 22px */
+  --_thumb-gap: 0.25rem;   /*  4px */
+}
+
+:host([disabled]) {
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+/* ── Root button ─────────────────────────────────────────── */
+.root {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: var(--weight-medium, 500);
+  color: var(--ui-text);
+  transition: color 200ms ease;
+}
+
+.label.is-empty {
+  display: none;
+}
+
+/* ── Track ───────────────────────────────────────────────── */
+.track {
+  position: relative;
+  flex-shrink: 0;
+  width: var(--_track-w);
+  height: var(--_track-h);
+  background: var(--ui-surface-sunken);
+  border: var(--ui-border-width, 1px) solid var(--ui-border);
+  border-radius: var(--ui-radius-full, 9999px);
+  transition:
+    background-color 200ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    border-color     200ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+/* Focus ring sits on the track so it's always visible */
+.root:focus-visible .track {
+  outline: 2px solid var(--ui-focus-ring);
+  outline-offset: 2px;
+}
+
+/* ── Thumb ───────────────────────────────────────────────── */
+.thumb {
+  position: absolute;
+  top: 50%;
+  left: var(--_thumb-gap);
+  width: var(--_thumb-sz);
+  height: var(--_thumb-sz);
+  background: var(--ui-text-muted);
+  border-radius: var(--ui-radius-full, 9999px);
+  box-shadow: var(--ui-shadow-xs);
+  transform: translateY(-50%);
+  transition:
+    left             200ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    background-color 200ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    transform        200ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+/* Hover — thumb breathes (scaleX from center, works in both positions) */
+.root:hover .thumb {
+  transform: translateY(-50%) scaleX(1.2);
+}
+
+/* ── Checked state ───────────────────────────────────────── */
+:host([checked]) .track {
+  background: var(--ui-primary);
+  border-color: var(--ui-primary);
+}
+
+:host([checked]) .thumb {
+  left: calc(var(--_track-w) - var(--_thumb-sz) - var(--_thumb-gap));
+  background: var(--ui-primary-fg);
+}
+
+/* ════════════════════════════════════════════════════════════
+   BRUTAL THEME — square, snappy, inverted
+   ════════════════════════════════════════════════════════════ */
+
+:host-context([data-theme="brutal"]) .root {
+  font-family: var(--font-mono, monospace);
+  font-weight: var(--weight-bold, 700);
+  letter-spacing: -0.02em;
+}
+
+:host-context([data-theme="brutal"]) .track {
+  border-radius: 0;
+  border: var(--ui-border-width, 2px) solid var(--ui-border);
+  box-shadow: var(--ui-shadow-xs);
+  transition:
+    background-color 160ms var(--ease-snappy, cubic-bezier(0.2, 0, 0, 1)),
+    border-color     160ms var(--ease-snappy, cubic-bezier(0.2, 0, 0, 1)),
+    box-shadow       160ms var(--ease-snappy, cubic-bezier(0.2, 0, 0, 1));
+}
+
+:host-context([data-theme="brutal"]) .thumb {
+  border-radius: 0;
+  box-shadow: none;
+  transition:
+    left             160ms var(--ease-snappy, cubic-bezier(0.2, 0, 0, 1)),
+    background-color 160ms var(--ease-snappy, cubic-bezier(0.2, 0, 0, 1)),
+    transform        160ms var(--ease-snappy, cubic-bezier(0.2, 0, 0, 1));
+}
+
+/* No thumb stretch in brutal — offset shadow bump on hover instead */
+:host-context([data-theme="brutal"]) .root:hover .thumb {
+  transform: translateY(-50%);
+}
+
+:host-context([data-theme="brutal"]) .root:hover .track {
+  box-shadow: var(--ui-shadow-sm);
+}
+
+/* ════════════════════════════════════════════════════════════
+   GLASS THEME — transparent track, glass-chip thumb
+   Unchecked: white-glass track barely visible.
+   Checked:   --ui-primary (now rgba(99,102,241,0.38)) auto-applies.
+   ════════════════════════════════════════════════════════════ */
+
+:host-context([data-theme="glass"]) .track {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.46);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.50),
+    inset 0 1px 3px rgba(0, 0, 0, 0.10);
+}
+
+:host-context([data-theme="glass"]) .thumb {
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow:
+    0 1px 6px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+/* Checked: --ui-primary is now translucent indigo — add edge glow */
+:host([checked]):host-context([data-theme="glass"]) .track {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 0 14px rgba(99, 102, 241, 0.22);
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .track,
+  .thumb {
+    transition: none !important;
+  }
+}
