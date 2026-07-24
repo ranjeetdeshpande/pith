@@ -64,3 +64,8 @@ document.addEventListener('click', (e) => {
     navigate()
   }
 })
+
+// ── Reveal the page once components are defined (removes the FOUC cloak) ──
+Promise.all(
+  ['pith-button', 'pith-switch', 'pith-badge'].map((t) => customElements.whenDefined(t)),
+).then(() => requestAnimationFrame(() => root.classList.remove('pith-loading')))

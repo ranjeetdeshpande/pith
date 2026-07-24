@@ -17,8 +17,21 @@
     <meta name="twitter:title" content="Pith — Web Components with character" />
     <meta name="twitter:description" content="Three themes · One API · Zero framework lock-in. Accessible Web Components in ~20kb." />
     <meta name="twitter:image" content="/og-image.svg" />
+    <!-- Cloak before first paint to prevent a flash of unstyled content -->
+    <script>
+      (function () {
+        var d = document.documentElement
+        try { if (localStorage.getItem('pith-docs-dark') === '1') d.setAttribute('data-dark', '') } catch (e) {}
+        d.classList.add('pith-loading')
+        setTimeout(function () { d.classList.remove('pith-loading') }, 1500)
+      })()
+    </script>
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      /* Cloak: hide body until ready, then fade in (JS-gated) */
+      html.pith-loading body { opacity: 0; }
+      body { opacity: 1; transition: opacity 220ms ease; }
 
       /* ── Page shell (inherits Ink tokens for text/bg via data-theme="ink" on html) */
       html, body {

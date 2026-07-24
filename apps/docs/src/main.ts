@@ -59,6 +59,16 @@ document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
   docsNav?.toggleAttribute('collapsed')
 })
 
+// Mobile: close the open drawer by tapping the scrim (the notch itself
+// toggles collapse at every screen size via its inline onclick).
+const closeDrawer = () => docsNav?.setAttribute('collapsed', '')
+document.querySelector('.nav-scrim')?.addEventListener('click', closeDrawer)
+// Tapping a nav item on mobile also dismisses the drawer
+docsNav?.addEventListener('click', (e) => {
+  if (window.innerWidth >= 480) return
+  if ((e.target as Element)?.closest?.('pith-sidebar-item')) closeDrawer()
+})
+
 // ── Font-size scale slider ────────────────────────────
 const fontsizeSlider = document.getElementById('fontsize-slider')!
 const fontsizeLabel  = document.getElementById('fontsize-label')!
@@ -262,26 +272,37 @@ document.querySelectorAll<HTMLElement>('.demo-card').forEach((card) => {
     .join('\n')
   if (!code.trim()) return
 
-  const panel = document.createElement('details')
-  panel.className = 'code-panel'
+  // Dogfood our own accordion instead of a custom <details>.
+  const accordion = document.createElement('pith-accordion')
+  accordion.setAttribute('variant', 'flush')
+  accordion.className = 'code-accordion'
 
-  const summary = document.createElement('summary')
+  const item = document.createElement('pith-accordion-item')
+
+  const header = document.createElement('span')
+  header.setAttribute('slot', 'header')
+  header.textContent = 'Code'
+
+  const body = document.createElement('div')
+  body.className = 'code-body'
+
   const copyBtn = document.createElement('button')
   copyBtn.className = 'code-copy'
   copyBtn.type = 'button'
   copyBtn.textContent = 'Copy'
-  summary.appendChild(copyBtn)
 
   const pre = document.createElement('pre')
   const codeEl = document.createElement('code')
   codeEl.textContent = code
   pre.appendChild(codeEl)
 
-  panel.append(summary, pre)
-  card.insertAdjacentElement('afterend', panel)
+  body.append(copyBtn, pre)
+  item.append(header, body)          // header slot + default (panel) slot
+  accordion.appendChild(item)
+  card.insertAdjacentElement('afterend', accordion)
 
   copyBtn.addEventListener('click', async (e) => {
-    e.preventDefault() // don't toggle the <details>
+    e.stopPropagation()
     try {
       await navigator.clipboard.writeText(code)
       copyBtn.textContent = 'Copied!'
@@ -453,3 +474,10 @@ if (pgStage) {
   pgBuildControls()
   pgRenderStage()
 }
+
+// ── Reveal the page once components are defined (removes the FOUC cloak) ──
+Promise.all(
+  ['pith-sidebar', 'pith-button', 'pith-tabs', 'pith-switch'].map((t) =>
+    customElements.whenDefined(t),
+  ),
+).then(() => requestAnimationFrame(() => root.classList.remove('pith-loading')))
