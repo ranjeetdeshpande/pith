@@ -7,6 +7,14 @@
   position: relative;
 }
 
+/* While closed, clip the (hidden but still laid-out) panel so its width
+   can't extend the page's horizontal scroll on narrow viewports. Overflow
+   is released as soon as it opens, so the menu can still escape the trigger. */
+:host(:not([open])) {
+  overflow: hidden;
+  overflow: clip;
+}
+
 /* ── Trigger wrapper ─────────────────────────────────────── */
 .trigger-wrapper {
   display: inline-flex;
