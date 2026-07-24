@@ -345,6 +345,7 @@
         display: flex;
         align-items: center;
         gap: 0.75rem;
+        min-width: 0; /* let children shrink instead of overflowing the card */
       }
 
       .cq-slot {
@@ -354,6 +355,9 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        /* Never exceed the available row width (fixed px widths cap on mobile) */
+        max-width: 100%;
+        min-width: 0;
         /* Container query context — .btn inside shadow DOM queries this */
         container-type: inline-size;
         container-name: pith-btn;
@@ -524,14 +528,6 @@
             <span style="font-size:0.9375rem; font-weight:700; letter-spacing:-0.03em; color:var(--ui-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:color 300ms ease;">pith</span>
           </div>
 
-          <!-- Explore -->
-          <pith-sidebar-section label="Explore">
-            <pith-sidebar-item href="#playground" data-section="playground">
-              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 14.5 5 8 8.5 1.5 5 8 1.5z"/><path d="M1.5 11 8 14.5 14.5 11"/><path d="M1.5 8 8 11.5 14.5 8"/></svg>
-              Playground
-            </pith-sidebar-item>
-          </pith-sidebar-section>
-
           <!-- Primitives -->
           <pith-sidebar-section label="Primitives">
             <pith-sidebar-item href="#button" data-section="button">
@@ -684,6 +680,14 @@
             </pith-sidebar-item>
           </pith-sidebar-section>
 
+          <!-- Explore -->
+          <pith-sidebar-section label="Explore">
+            <pith-sidebar-item href="#playground" data-section="playground">
+              <svg slot="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 14.5 5 8 8.5 1.5 5 8 1.5z"/><path d="M1.5 11 8 14.5 14.5 11"/><path d="M1.5 8 8 11.5 14.5 8"/></svg>
+              Playground
+            </pith-sidebar-item>
+          </pith-sidebar-section>
+
           <!-- Toggle footer — always visible; label hides automatically when collapsed -->
           <div slot="footer" style="border-top:var(--ui-border-width,1px) solid var(--ui-border); padding:0.375rem 0.5rem;">
             <pith-sidebar-item
@@ -746,30 +750,6 @@
 
         <!-- Scrollable content body -->
         <div class="content-body">
-
-    <!-- ── Interactive Playground ──────────────────────────── -->
-    <section id="playground" class="section">
-      <p class="section-label">interactive</p>
-      <h2 class="section-title">Playground</h2>
-      <p class="section-desc">Pick a component, flip its props, and copy the exact markup. Renders live in the active theme.</p>
-
-      <pith-tabs id="pg-component" value="button" variant="pills" label="Component" style="margin-bottom:1rem">
-        <pith-tab slot="tabs" value="button">Button</pith-tab>
-        <pith-tab slot="tabs" value="badge">Badge</pith-tab>
-        <pith-tab slot="tabs" value="card">Card</pith-tab>
-        <pith-tab slot="tabs" value="input">Input</pith-tab>
-      </pith-tabs>
-
-      <div class="pg-grid">
-        <div class="pg-stage demo-card" data-no-code id="pg-stage"></div>
-        <div class="pg-controls" id="pg-controls"></div>
-      </div>
-
-      <details class="code-panel" id="pg-code-panel" open>
-        <summary><button class="code-copy" type="button" id="pg-copy">Copy</button></summary>
-        <pre><code id="pg-code"></code></pre>
-      </details>
-    </section>
 
     <!-- ── Button: Variants ────────────────────────────────── -->
     <section id="button" class="section">
@@ -2591,6 +2571,30 @@
   &lt;pith-button variant="primary"&gt;Hello world&lt;/pith-button&gt;
 &lt;/body&gt;</code></pre>
       </div>
+    </section>
+
+    <!-- ── Interactive Playground ──────────────────────────── -->
+    <section id="playground" class="section">
+      <p class="section-label">interactive</p>
+      <h2 class="section-title">Playground</h2>
+      <p class="section-desc">Pick a component, flip its props, and copy the exact markup. Renders live in the active theme.</p>
+
+      <pith-tabs id="pg-component" value="button" variant="pills" label="Component" style="margin-bottom:1rem">
+        <pith-tab slot="tabs" value="button">Button</pith-tab>
+        <pith-tab slot="tabs" value="badge">Badge</pith-tab>
+        <pith-tab slot="tabs" value="card">Card</pith-tab>
+        <pith-tab slot="tabs" value="input">Input</pith-tab>
+      </pith-tabs>
+
+      <div class="pg-grid">
+        <div class="pg-stage demo-card" data-no-code id="pg-stage"></div>
+        <div class="pg-controls" id="pg-controls"></div>
+      </div>
+
+      <details class="code-panel" id="pg-code-panel" open>
+        <summary><button class="code-copy" type="button" id="pg-copy">Copy</button></summary>
+        <pre><code id="pg-code"></code></pre>
+      </details>
     </section>
 
     <footer>
