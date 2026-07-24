@@ -129,11 +129,12 @@
 [data-theme="glass"] {
   color-scheme: light;
 
-  /* Frosted white panels — enough opacity to show blur effect */
-  --ui-surface:         rgba(255, 255, 255, 0.52);
-  --ui-surface-raised:  rgba(255, 255, 255, 0.68);
-  --ui-surface-overlay: rgba(255, 255, 255, 0.84);
-  --ui-surface-sunken:  rgba(255, 255, 255, 0.36);
+  /* Frosted white panels — translucent enough to let the tinted
+     backdrop bleed through so the frost reads as glass, not flat white */
+  --ui-surface:         rgba(255, 255, 255, 0.44);
+  --ui-surface-raised:  rgba(255, 255, 255, 0.58);
+  --ui-surface-overlay: rgba(255, 255, 255, 0.80);
+  --ui-surface-sunken:  rgba(255, 255, 255, 0.28);
 
   --ui-text:            rgba(0, 0, 0, 0.88);
   --ui-text-muted:      rgba(0, 0, 0, 0.52);
@@ -144,12 +145,12 @@
   --ui-border:          rgba(255, 255, 255, 0.60);
   --ui-border-strong:   rgba(255, 255, 255, 0.82);
 
-  /* Primary is translucent — every component using it becomes glassy.
-     --ui-primary-fg is dark indigo (not white) so text stays readable
-     against the near-transparent background on any page colour. */
-  --ui-primary:         rgba(99, 102, 241, 0.38);
-  --ui-primary-fg:      rgb(55, 48, 163);
-  --ui-primary-hover:   rgba(79, 70, 229, 0.58);
+  /* Primary is a confident glass-tinted indigo — translucent enough to
+     frost, saturated enough to read as a real primary with white text
+     (the old near-transparent fill looked washed-out and unfinished). */
+  --ui-primary:         rgba(79, 70, 229, 0.82);
+  --ui-primary-fg:      #fff;
+  --ui-primary-hover:   rgba(67, 56, 202, 0.92);
   --ui-focus-ring:      rgba(99, 102, 241, 0.82);
 
   --ui-danger:          rgba(220, 38, 38, 0.9);
@@ -175,8 +176,9 @@
   --ui-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(255,255,255,0.3);
   --ui-shadow-xl: 0 32px 64px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(255,255,255,0.2);
 
-  /* Stronger blur + saturation so frosted effect reads clearly */
-  --ui-backdrop: blur(24px) saturate(200%) brightness(1.06);
+  /* Stronger blur + saturation so frosted effect reads clearly.
+     Lower brightness so the backdrop colour isn't washed to white. */
+  --ui-backdrop: blur(20px) saturate(235%) brightness(1.02);
 
   --ui-border-width: 1px;
   --ui-border-style: solid;
