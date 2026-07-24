@@ -6,9 +6,10 @@ import styles from './sidebar-item.css?raw'
  * `pith-sidebar-item` — A single navigation item inside a `<pith-sidebar>`.
  *
  * Renders as an `<a>` when `href` is provided (full link semantics, right-click
- * to open in new tab), or a `<button>` for in-page actions. The collapsed
- * state of the parent sidebar is detected via `:host-context()` in CSS —
- * labels and badges are hidden automatically, icons stay centered.
+ * to open in new tab), or a `<button>` for in-page actions. When the parent
+ * sidebar collapses it mirrors a `collapsed` attribute onto this element, so
+ * `:host([collapsed])` hides labels/badges and centers the icon — this works
+ * in every browser, unlike `:host-context()`.
  *
  * @tag pith-sidebar-item
  *

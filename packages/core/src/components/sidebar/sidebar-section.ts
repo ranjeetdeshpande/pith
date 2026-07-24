@@ -7,8 +7,9 @@ import styles from './sidebar-section.css?raw'
  * inside a `<pith-sidebar>`.
  *
  * Renders an optional uppercase heading above its slotted items and adds a
- * divider between sections. When the parent sidebar is collapsed, the heading
- * is hidden via `:host-context()` CSS — no JavaScript needed.
+ * divider between sections. When the parent sidebar collapses it mirrors a
+ * `collapsed` attribute onto this element, which hides the heading (leaving
+ * just the divider line) via `:host([collapsed])` — works in all browsers.
  *
  * @tag pith-sidebar-section
  *

@@ -1,4 +1,4 @@
-import { LitElement, html, unsafeCSS } from 'lit'
+import { LitElement, html, unsafeCSS, type PropertyValues } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import styles from './sidebar.css?raw'
 
@@ -7,8 +7,10 @@ import styles from './sidebar.css?raw'
  *
  * Provides a vertically-stacked navigation panel with three slot regions
  * (header, content, footer) and a `collapsed` mode that shrinks the panel
- * to an icon-only rail. Children read the collapsed state via
- * `:host-context(pith-sidebar[collapsed])` — no JavaScript coordination needed.
+ * to an icon-only rail. The collapsed state is mirrored onto child
+ * `pith-sidebar-section` / `pith-sidebar-item` elements as a `collapsed`
+ * attribute, so they style themselves with `:host([collapsed])` — this works
+ * in every browser (unlike `:host-context()`, which Safari/Firefox ignore).
  *
  * @tag pith-sidebar
  *
@@ -47,11 +49,29 @@ export class PithSidebar extends LitElement {
   @property({ type: Boolean, reflect: true })
   collapsed = false
 
+  override firstUpdated() {
+    this.#syncCollapsed()
+  }
+
+  override updated(changed: PropertyValues<this>) {
+    if (changed.has('collapsed')) this.#syncCollapsed()
+  }
+
+  /**
+   * Mirror `collapsed` onto every descendant section/item. `querySelectorAll`
+   * walks the light DOM, so it catches items nested inside sections too.
+   */
+  #syncCollapsed() {
+    this.querySelectorAll('pith-sidebar-section, pith-sidebar-item').forEach((el) =>
+      el.toggleAttribute('collapsed', this.collapsed),
+    )
+  }
+
   override render() {
     return html`
       <nav class="root" part="root" aria-label=${this.label}>
         <div class="header-slot"><slot name="header"></slot></div>
-        <div class="content"><slot></slot></div>
+        <div class="content"><slot @slotchange=${() => this.#syncCollapsed()}></slot></div>
         <div class="footer-slot"><slot name="footer"></slot></div>
       </nav>
     `
