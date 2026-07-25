@@ -11,6 +11,8 @@
       "import": "./dist/index.js"
     },
     "./styles.css": "./dist/styles.css",
+    "./pith.min.css": "./dist/pith.min.css",
+    "./pith.min.js": "./dist/pith.min.js",
     "./components/accordion":   { "types": "./dist/components/accordion/index.d.ts",   "import": "./dist/components/accordion/index.js"   },
     "./components/alert":       { "types": "./dist/components/alert/index.d.ts",       "import": "./dist/components/alert/index.js"       },
     "./components/avatar":      { "types": "./dist/components/avatar/index.d.ts",      "import": "./dist/components/avatar/index.js"      },
@@ -50,7 +52,7 @@
     "./dist/index.js"
   ],
   "scripts": {
-    "build": "vite build && pnpm build:css",
+    "build": "vite build && vite build --config vite.config.standalone.ts && pnpm build:css",
     "build:css": "node scripts/build-css.mjs",
     "dev": "vite build --watch",
     "lint": "tsc --noEmit",
