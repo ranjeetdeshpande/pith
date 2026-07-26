@@ -29,8 +29,17 @@ npm install @pith/react @pith/ui lit
 
 ## CDN (no install)
 
+Plain `<script>` tag — no build step, works anywhere:
+
 ```html
-<link rel="stylesheet" href="https://esm.sh/@pith/ui/styles" />
+<link rel="stylesheet" href="https://unpkg.com/@pith/ui/dist/pith.min.css" />
+<script src="https://unpkg.com/@pith/ui/dist/pith.min.js" defer></script>
+```
+
+ES modules (tree-shakeable) via esm.sh:
+
+```html
+<link rel="stylesheet" href="https://esm.sh/@pith/ui/styles.css" />
 <script type="module" src="https://esm.sh/@pith/ui"></script>
 ```
 
